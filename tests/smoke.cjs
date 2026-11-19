@@ -7,7 +7,7 @@ const fs = require('node:fs');
 (async () => {
   const html = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
   const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
-  assert.ok(script, 'Debe existir el script de Franche TV');
+  assert.ok(script, 'Debe existir el script de ReyTV');
   new Function(script);
   for (const name of ['netflix', 'youtube', 'prime', 'disney', 'twitch']) {
     assert.ok(html.includes(`id:'${name}'`), `Debe estar incluido ${name}`);
@@ -28,7 +28,7 @@ const fs = require('node:fs');
   try {
     const address = `file://${path.resolve(__dirname, '../index.html')}`;
     await page.goto(address);
-    assert.equal(await page.title(), 'Franche TV — Tu pantalla, tus reglas');
+    assert.equal(await page.title(), 'ReyTV — Tu pantalla, tus reglas');
     assert.equal(await page.locator('.app-card').count(), 4);
     await page.keyboard.press('ArrowDown');
     assert.notEqual(await page.evaluate(() => document.activeElement?.tagName), 'BODY');
@@ -47,7 +47,7 @@ const fs = require('node:fs');
     assert.equal(await page.locator('.app-card').count(), 9);
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#hero').isVisible(), true);
-    await page.screenshot({ path: path.resolve(__dirname, '../../franche-tv-screenshot.png'), fullPage: true });
+    await page.screenshot({ path: path.resolve(__dirname, '../../reytv-screenshot.png'), fullPage: true });
     console.log('Todas las pruebas funcionales pasaron.');
   } finally {
     await browser.close();

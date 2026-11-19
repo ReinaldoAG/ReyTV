@@ -1,0 +1,11 @@
+[Unit]
+Description=Revisar actualizaciones de ReyTV cada día
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=30m
+Unit=reytv-update.service
+
+[Install]
+WantedBy=timers.target

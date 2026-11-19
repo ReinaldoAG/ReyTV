@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Recupera la interfaz inmediatamente anterior. No toca el sistema operativo.
+set -euo pipefail
+APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/reytv"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/reytv"
+PREVIOUS="$STATE_DIR/previous-index.html"
+CURRENT="$APP_DIR/index.html"
+
+if [[ ! -s "$PREVIOUS" || ! -s "$CURRENT" ]]; then
+  echo 'Aún no hay una versión anterior para restaurar.' >&2
+  exit 1
+fi
+
+TMP="$(mktemp "$APP_DIR/.rollback.XXXXXXXX")"
+trap 'rm -f -- "$TMP"' EXIT
+cp -p -- "$PREVIOUS" "$TMP"
+
+if [[ -f "$STATE_DIR/current.sha" ]]; then
+  cp -p -- "$STATE_DIR/current.sha" "$STATE_DIR/blocked.sha"
+fi
+cp -p -- "$CURRENT" "$PREVIOUS"
+mv -f -- "$TMP" "$CURRENT"
+if [[ -f "$STATE_DIR/previous.sha" ]]; then
+  cp -p -- "$STATE_DIR/previous.sha" "$STATE_DIR/current.sha"
+else
+  printf '%s\n' 'rollback' > "$STATE_DIR/current.sha"
+fi
+echo 'Versión anterior restaurada. Recarga ReyTV para ver los cambios.'

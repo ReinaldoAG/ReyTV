@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#090b13" />
-  <title>Franche TV — Tu pantalla, tus reglas</title>
+  <title>ReyTV — Tu pantalla, tus reglas</title>
   <style>
     :root {
       color-scheme: dark;
@@ -106,7 +106,7 @@
   <main class="shell">
     <header class="topbar">
       <div class="lefthead">
-        <a class="brand" href="#inicio" id="brand" aria-label="Ir al inicio de Franche TV"><span class="brand-icon">F</span><span>Franche <i>TV</i></span></a>
+        <a class="brand" href="#inicio" id="brand" aria-label="Ir al inicio de ReyTV"><span class="brand-icon">R</span><span>Rey<i>TV</i></span></a>
         <nav class="nav" aria-label="Navegación principal">
           <button type="button" data-page="inicio" aria-current="page">Inicio</button>
           <button type="button" data-page="aplicaciones">Aplicaciones</button>
@@ -119,7 +119,7 @@
 
     <section id="hero" class="hero" aria-label="Presentación">
       <div class="hero-copy"><span class="eyebrow">Tu espacio de entretenimiento</span><h1>Tu pantalla.<br /><span>Tus reglas.</span></h1><p>Todo lo que te gusta, en un solo lugar. Elige un servicio con las flechas del teclado y presiona Enter para abrirlo.</p><button class="primary" id="watch" type="button">▶ &nbsp; Abrir YouTube</button></div>
-      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>UN NUEVO COMIENZO</small>Franche TV · 0.1</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>UN NUEVO COMIENZO</small>ReyTV · 0.2</div></div>
     </section>
 
     <section id="content" aria-live="polite">
@@ -127,7 +127,7 @@
       <div id="searchrow" class="searchrow hidden"><input id="search" class="searchbox" type="search" placeholder="Buscar una aplicación…" aria-label="Buscar aplicación" autocomplete="off" /><span class="chip">Presiona / para buscar</span></div>
       <div id="apps" class="grid"></div>
     </section>
-    <footer class="footer"><span>Franche TV · Edición CN60 · Aplicaciones web, sin relación comercial con las plataformas.</span><span><kbd class="key">← ↑ ↓ →</kbd> Navegar &nbsp; <kbd class="key">Enter</kbd> Abrir &nbsp; <kbd class="key">Esc</kbd> Volver &nbsp; <kbd class="key">/</kbd> Buscar</span></footer>
+    <footer class="footer"><span>ReyTV · Edición CN60 · Aplicaciones web, sin relación comercial con las plataformas.</span><span><kbd class="key">← ↑ ↓ →</kbd> Navegar &nbsp; <kbd class="key">Enter</kbd> Abrir &nbsp; <kbd class="key">Esc</kbd> Volver &nbsp; <kbd class="key">/</kbd> Buscar</span></footer>
   </main>
 
   <div id="modal" class="overlay hidden" role="presentation">
@@ -138,7 +138,7 @@
   <script>
   (() => {
     'use strict';
-    const STORAGE_KEY = 'franche-tv-v1';
+    const STORAGE_KEY = 'reytv-v1';
     const builtIn = [
       { id:'youtube', name:'YouTube', url:'https://www.youtube.com/', subtitle:'Videos, música y mucho más', c1:'#70231f',c2:'#200d16', glow:'#fb574e',badge:'VIDEOS' },
       { id:'netflix', name:'Netflix', url:'https://www.netflix.com/', subtitle:'Series y películas', c1:'#681b29',c2:'#160c17',glow:'#df254d',badge:'STREAMING' },
@@ -188,7 +188,7 @@
       const b=document.createElement('button'); b.type='button';b.className='utility-card';b.innerHTML='<span class="utility-icon">＋</span><span><strong>Añadir servicio</strong><small>Crea un acceso a otra página web</small></span>';b.addEventListener('click',()=>openModal('add'));return b;
     }
     function render(){
-      const sections={inicio:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','Franche TV 0.1']};
+      const sections={inicio:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','ReyTV 0.2']};
       const [title,chip]=sections[page]; $('section-heading').textContent=title;$('section-chip').textContent=chip;
       $('hero').classList.toggle('hidden',page!=='inicio');$('searchrow').classList.toggle('hidden',page!=='aplicaciones');
       document.querySelectorAll('[data-page]').forEach(btn=>{if(btn.dataset.page===page)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});
@@ -196,7 +196,7 @@
       $('settings')?.remove();
       if(page==='ajustes'){
         const panel=document.createElement('div');panel.id='settings';panel.className='settings-panel';
-        panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>Franche TV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a Franche TV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
+        panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>ReyTV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a ReyTV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
         const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);$('content').appendChild(panel);return;
       }
       const list=allApps().filter(a=>(page==='aplicaciones'||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));

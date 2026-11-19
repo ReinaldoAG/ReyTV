@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Actualiza SOLO la interfaz web de ReyTV desde la rama main del repo.
+# No ejecuta código descargado con permisos de administrador, no toca Debian.
+set -euo pipefail
+
+APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/reytv"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/reytv"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/reytv"
+CLONE="$CACHE_DIR/git-source"
+REPO="${REYTV_REPO_URL:-git@github.com:ReinaldoAG/ReyTV.git}"
+BRANCH="${REYTV_CHANNEL:-main}"
+FORCE=0
+
+if [[ "${1:-}" == '--force' ]]; then FORCE=1
+elif [[ $# -gt 0 ]]; then echo 'Uso: reytv-update [--force]' >&2; exit 2
+fi
+[[ "$BRANCH" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo 'Canal de actualización no válido.' >&2; exit 2; }
+command -v git >/dev/null || { echo 'Instala git antes de actualizar ReyTV.' >&2; exit 1; }
+[[ -f "$APP_DIR/index.html" ]] || { echo 'Instala ReyTV antes de actualizar.' >&2; exit 1; }
+
+mkdir -p "$STATE_DIR" "$CACHE_DIR"
+
+# Si se creó una deploy key exclusiva para ReyTV, úsala con SSH no interactivo.
+# Si no existe, git usará la configuración SSH habitual del usuario.
+if [[ -f "$HOME/.ssh/reytv_deploy" ]]; then
+  export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -i $HOME/.ssh/reytv_deploy"
+else
+  export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes'
+fi
+
+if [[ ! -d "$CLONE/.git" ]]; then
+  git clone --quiet --no-checkout --depth 1 --single-branch --branch "$BRANCH" -- "$REPO" "$CLONE"
+  NEXT_SHA="$(git -C "$CLONE" rev-parse HEAD)"
+else
+  git -C "$CLONE" fetch --quiet --depth 1 origin "$BRANCH"
+  NEXT_SHA="$(git -C "$CLONE" rev-parse FETCH_HEAD)"
+fi
+[[ "$NEXT_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'No se pudo verificar el commit.' >&2; exit 1; }
+
+if [[ "$FORCE" -ne 1 && -f "$STATE_DIR/blocked.sha" && "$(<"$STATE_DIR/blocked.sha")" == "$NEXT_SHA" ]]; then
+  echo "La actualización $NEXT_SHA fue revertida anteriormente. Esperando una versión nueva (o --force)."
+  exit 0
+fi
+if [[ -f "$STATE_DIR/current.sha" && "$(<"$STATE_DIR/current.sha")" == "$NEXT_SHA" ]]; then
+  echo "ReyTV ya está actualizada: ${NEXT_SHA:0:12}"
+  exit 0
+fi
+
+TMP="$(mktemp "$APP_DIR/.index.XXXXXXXX")"
+trap 'rm -f -- "$TMP"' EXIT
+git -C "$CLONE" show "$NEXT_SHA:index.html" > "$TMP"
+
+# Validación básica antes de reemplazar el menú de usuario.
+BYTES="$(wc -c < "$TMP")"
+if [[ "$BYTES" -lt 3000 || "$BYTES" -gt 300000 ]] || ! grep -Fq '<title>ReyTV' "$TMP" || ! grep -Fq '</html>' "$TMP"; then
+  echo 'La versión descargada no parece una interfaz ReyTV válida; se conserva la actual.' >&2
+  exit 1
+fi
+
+if cmp -s "$TMP" "$APP_DIR/index.html"; then
+  printf '%s\n' "$NEXT_SHA" > "$STATE_DIR/current.sha"
+  echo "Misma interfaz; registrado commit ${NEXT_SHA:0:12}."
+  exit 0
+fi
+
+cp -p -- "$APP_DIR/index.html" "$STATE_DIR/previous-index.html"
+if [[ -f "$STATE_DIR/current.sha" ]]; then
+  cp -p -- "$STATE_DIR/current.sha" "$STATE_DIR/previous.sha"
+else
+  printf '%s\n' 'initial-install' > "$STATE_DIR/previous.sha"
+fi
+chmod 0644 "$TMP"
+mv -f -- "$TMP" "$APP_DIR/index.html"
+printf '%s\n' "$NEXT_SHA" > "$STATE_DIR/current.sha"
+rm -f -- "$STATE_DIR/blocked.sha"
+
+echo "ReyTV actualizada a ${NEXT_SHA:0:12}. Recarga el menú para ver los cambios."

@@ -1,0 +1,7 @@
+[Unit]
+Description=Buscar y aplicar actualizaciones de ReyTV
+Documentation=https://github.com/ReinaldoAG/ReyTV
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/reytv-update
