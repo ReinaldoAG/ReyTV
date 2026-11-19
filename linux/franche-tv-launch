@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Inicia Franche TV localmente, sin exponer el servidor a la red.
+set -euo pipefail
+
+APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/franche-tv"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/franche-tv"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/franche-tv"
+PORT=18763
+URL="http://127.0.0.1:${PORT}/index.html"
+
+if [[ ! -f "$APP_DIR/index.html" ]]; then
+  echo "No encuentro Franche TV en: $APP_DIR" >&2
+  exit 1
+fi
+command -v python3 >/dev/null || { echo 'Se requiere Python 3.' >&2; exit 1; }
+
+BROWSER=''
+for executable in google-chrome-stable google-chrome chromium chromium-browser; do
+  if command -v "$executable" >/dev/null 2>&1; then
+    BROWSER="$(command -v "$executable")"
+    break
+  fi
+done
+if [[ -z "$BROWSER" ]]; then
+  echo 'Instala Google Chrome para Linux (recomendado para Netflix) antes de iniciar Franche TV.' >&2
+  exit 1
+fi
+
+mkdir -p "$STATE_DIR" "$CONFIG_DIR"
+PIDFILE="$STATE_DIR/http.pid"
+if [[ ! -s "$PIDFILE" ]] || ! kill -0 "$(<"$PIDFILE")" 2>/dev/null; then
+  nohup python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$APP_DIR" \
+    >>"$STATE_DIR/http.log" 2>&1 </dev/null &
+  echo "$!" > "$PIDFILE"
+fi
+
+# La pestaña de cada servicio es independiente; Ctrl+W regresa al menú.
+# --start-fullscreen mantiene disponibles los atajos estándar del navegador.
+exec "$BROWSER" \
+  --user-data-dir="$CONFIG_DIR/chrome-profile" \
+  --new-window \
+  --no-first-run \
+  --start-fullscreen \
+  "$URL"
