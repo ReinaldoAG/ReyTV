@@ -1,0 +1,34 @@
+# Base gráfica ligera y sesión de escritorio
+xorg
+lxqt-core
+openbox
+sddm
+qterminal
+pcmanfm-qt
+
+# Navegadores de Debian: Netflix/DRM puede requerir Chrome oficial adicional.
+chromium
+firefox-esr
+
+# Red, audio, bluetooth, teclado y herramientas ReyTV
+network-manager
+network-manager-gnome
+firmware-iwlwifi
+bluez
+blueman
+pipewire
+pipewire-audio
+wireplumber
+alsa-utils
+python3
+git
+openssh-client
+curl
+ca-certificates
+sudo
+user-setup
+debian-installer-launcher
+
+# Paquetes de Debian se actualizan después de instalar, sin nueva ISO.
+unattended-upgrades
+apt-listchanges

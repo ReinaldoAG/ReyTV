@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Instala desde Google el .deb oficial en el propio Chromebox, con consentimiento del usuario.
+# Chrome NO se redistribuye dentro de la ISO de ReyTV.
+set -euo pipefail
+
+if [[ "$(id -u)" -ne 0 ]]; then
+  exec sudo -- "$0" "$@"
+fi
+if [[ $# -ne 0 ]]; then
+  echo 'Uso: reytv-install-chrome' >&2
+  exit 2
+fi
+
+TMP_DEB="$(mktemp --suffix=.deb /tmp/reytv-chrome-XXXXXXXX)"
+trap 'rm -f -- "$TMP_DEB"' EXIT
+echo 'Descargando Google Chrome oficial desde dl.google.com...'
+curl --fail --location --show-error --retry 3 \
+  --output "$TMP_DEB" \
+  'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'
+apt-get update
+apt-get install -- "$TMP_DEB"
+echo 'Chrome instalado. Cierra y vuelve a abrir ReyTV para usarlo.'

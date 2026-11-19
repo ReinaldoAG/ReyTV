@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Aplica actualizaciones de paquetes del sistema instalado; NO cambia de versión mayor Debian.
+# Apt muestra el plan y solicita confirmación: no forzamos eliminaciones silenciosas.
+set -euo pipefail
+
+if [[ "$(id -u)" -ne 0 ]]; then
+  exec sudo -- "$0" "$@"
+fi
+if [[ $# -ne 0 ]]; then
+  echo 'Uso: reytv-system-update' >&2
+  exit 2
+fi
+
+echo 'ReyTV: buscando actualizaciones del sistema operativo y navegadores...'
+apt-get update
+apt-get full-upgrade
+if [[ -f /run/reboot-required ]]; then
+  echo 'Hay actualizaciones que requieren reiniciar el equipo.'
+fi
+echo 'Listo. Las actualizaciones de una versión mayor de Debian se planifican por separado.'

@@ -1,0 +1,57 @@
+name: Compilar ISO de ReyTV
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-iso.yml'
+      - 'iso/**'
+      - 'linux/reytv-launch'
+      - 'linux/reytv-update'
+      - 'linux/reytv-rollback'
+      - 'linux/systemd/**'
+      - 'index.html'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Obtener ReyTV
+        uses: actions/checkout@v4
+
+      - name: Comprobar integridad de fuentes
+        run: bash tests/iso-smoke.sh
+
+      - name: Instalar herramientas para Debian Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            live-build debootstrap xorriso squashfs-tools isolinux syslinux-common \
+            grub-pc-bin grub-efi-amd64-bin dosfstools mtools
+
+      - name: Compilar sistema y su instalador
+        run: sudo bash iso/build.sh "$RUNNER_TEMP/reytv-build"
+
+      - name: Validar integridad y opciones de arranque de la ISO
+        run: |
+          cd "$RUNNER_TEMP/reytv-build"
+          sha256sum --check reytv-amd64.hybrid.iso.sha256
+          xorriso -indev reytv-amd64.hybrid.iso -report_el_torito plain
+          test "$(stat -c %s reytv-amd64.hybrid.iso)" -gt 100000000
+
+      - name: Publicar ISO descargable como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReyTV-${{ github.ref_name }}-amd64-ISO
+          path: |
+            ${{ runner.temp }}/reytv-build/reytv-amd64.hybrid.iso
+            ${{ runner.temp }}/reytv-build/reytv-amd64.hybrid.iso.sha256
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0

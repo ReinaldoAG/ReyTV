@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=ReyTV
+Comment=Centro de entretenimiento ReyTV
+Exec=/usr/local/bin/reytv
+Terminal=false
+X-GNOME-Autostart-enabled=true
