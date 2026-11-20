@@ -47,9 +47,21 @@ jobs:
               xorriso -indev /build/reytv-amd64.hybrid.iso -report_el_torito plain
             '
 
+      - name: Guardar la ISO y liberar espacio temporal
+        run: |
+          mkdir -p "$RUNNER_TEMP/reytv-artifacts"
+          mv -- "$RUNNER_TEMP/reytv-build/reytv-amd64.hybrid.iso" "$RUNNER_TEMP/reytv-artifacts/"
+          mv -- "$RUNNER_TEMP/reytv-build/reytv-amd64.hybrid.iso.sha256" "$RUNNER_TEMP/reytv-artifacts/"
+          # Después de preservar la ISO, se borra exclusivamente el directorio
+          # de compilación temporal creado por este workflow.
+          test -d "$RUNNER_TEMP/reytv-build/config"
+          test -s "$RUNNER_TEMP/reytv-artifacts/reytv-amd64.hybrid.iso"
+          sudo rm -rf -- "$RUNNER_TEMP/reytv-build"
+          df -h "$RUNNER_TEMP"
+
       - name: Validar integridad y opciones de arranque de la ISO
         run: |
-          cd "$RUNNER_TEMP/reytv-build"
+          cd "$RUNNER_TEMP/reytv-artifacts"
           sha256sum --check reytv-amd64.hybrid.iso.sha256
           test "$(stat -c %s reytv-amd64.hybrid.iso)" -gt 100000000
 
@@ -58,8 +70,8 @@ jobs:
         with:
           name: ReyTV-${{ github.ref_name }}-amd64-ISO
           path: |
-            ${{ runner.temp }}/reytv-build/reytv-amd64.hybrid.iso
-            ${{ runner.temp }}/reytv-build/reytv-amd64.hybrid.iso.sha256
+            ${{ runner.temp }}/reytv-artifacts/reytv-amd64.hybrid.iso
+            ${{ runner.temp }}/reytv-artifacts/reytv-amd64.hybrid.iso.sha256
           if-no-files-found: error
           retention-days: 30
           compression-level: 0

@@ -16,6 +16,8 @@ test -s "$ROOT/iso/files/etc/skel/.config/autostart/reytv.desktop"
 test -s "$ROOT/iso/files/etc/apt/apt.conf.d/20auto-upgrades"
 grep -Fq -- '--debian-installer live' "$ROOT/iso/build.sh"
 grep -Fq -- '--binary-image iso-hybrid' "$ROOT/iso/build.sh"
+grep -Fq -- 'sha256sum reytv-amd64.hybrid.iso > reytv-amd64.hybrid.iso.sha256' "$ROOT/iso/build.sh"
+grep -Fq -- 'reytv-artifacts/reytv-amd64.hybrid.iso' "$ROOT/.github/workflows/build-iso.yml"
 grep -Fq -- 'unattended-upgrades' "$ROOT/iso/packages.list.chroot"
 grep -Fq -- 'apt-get full-upgrade' "$ROOT/iso/files/usr/local/bin/reytv-system-update"
 echo 'Estructura de ISO y scripts: OK.'

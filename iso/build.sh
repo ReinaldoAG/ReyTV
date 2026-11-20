@@ -67,6 +67,9 @@ if [[ ! -s "$ISO_FILE" ]]; then
   echo "No se generó $ISO_FILE" >&2
   exit 1
 fi
-sha256sum "$ISO_FILE" > "$ISO_FILE.sha256"
+# El checksum debe contener el nombre RELATIVO del archivo, porque GitHub
+# Actions ve /build dentro de Docker y otra ruta fuera del contenedor.
+cd -- "$BUILD_DIR"
+sha256sum reytv-amd64.hybrid.iso > reytv-amd64.hybrid.iso.sha256
 echo "ISO creada: $ISO_FILE"
-echo "SHA256: $(<"$ISO_FILE.sha256")"
+echo "SHA256: $(<reytv-amd64.hybrid.iso.sha256)"
