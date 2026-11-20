@@ -28,7 +28,14 @@ if [[ ${#kernels[@]} -ne 1 ]]; then
   echo "Se esperaba un único kernel Live; encontrados: ${#kernels[@]}" >&2
   exit 1
 fi
-kernel_path="${kernels[0]}"
+# xorriso devuelve rutas con comillas simples para escaparlas como shell.
+# Los nombres de kernel oficiales son seguros: quitamos esas comillas y
+# validamos la ruta sin evaluarla ni ejecutar lo devuelto por xorriso.
+kernel_path="${kernels[0]//\'/}"
+if [[ "$kernel_path" != /live/vmlinuz-* ]]; then
+  echo "Ruta de kernel Live inesperada: $kernel_path" >&2
+  exit 1
+fi
 version="${kernel_path##*/vmlinuz-}"
 initrd_path="/live/initrd.img-$version"
 
