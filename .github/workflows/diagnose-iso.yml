@@ -34,15 +34,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ runner.temp }}/reytv-original
 
-      - name: Preparar herramientas de análisis
+      - name: Inspeccionar initrd y ejecutar Live en QEMU (Debian)
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            xorriso initramfs-tools-core qemu-system-x86
-
-      - name: Inspeccionar initrd y ejecutar Live en QEMU
-        run: |
-          bash tests/iso-boot-smoke.sh \
-            "$RUNNER_TEMP/reytv-original/reytv-amd64.hybrid.iso" \
-            "$RUNNER_TEMP/reytv-diagnosis"
+          # Usamos el mismo Debian que genera la ISO: en Ubuntu la descarga
+          # de paquetes quedó bloqueada durante varios minutos.
+          mkdir -p "$RUNNER_TEMP/reytv-diagnosis"
+          docker run --rm \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/src,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/reytv-original,target=/iso,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/reytv-diagnosis,target=/reports" \
+            -e DEBIAN_FRONTEND=noninteractive \
+            debian:trixie bash -euc '
+              timeout 150 apt-get update
+              timeout 150 apt-get install -y --no-install-recommends \
+                xorriso initramfs-tools-core qemu-system-x86
+              bash /src/tests/iso-boot-smoke.sh \
+                /iso/reytv-amd64.hybrid.iso /reports
+            '
 
