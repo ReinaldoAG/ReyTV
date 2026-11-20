@@ -1,0 +1,56 @@
+name: Diagnosticar arranque de ISO ReyTV
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'ID del workflow que generó la ISO'
+        required: false
+        default: '44654126010'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/diagnose-iso.yml'
+      - 'tests/iso-boot-smoke.sh'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Obtener scripts de ReyTV
+        uses: actions/checkout@v4
+
+      - name: Descargar ISO original sin recompilar
+        uses: actions/download-artifact@v4
+        with:
+          name: ReyTV-main-amd64-ISO
+          run-id: ${{ inputs.run_id || '44654126010' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/reytv-original
+
+      - name: Preparar herramientas de análisis
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            xorriso initramfs-tools-core qemu-system-x86
+
+      - name: Inspeccionar initrd y ejecutar Live en QEMU
+        run: |
+          bash tests/iso-boot-smoke.sh \
+            "$RUNNER_TEMP/reytv-original/reytv-amd64.hybrid.iso" \
+            "$RUNNER_TEMP/reytv-diagnosis"
+
+      - name: Guardar registros de diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReyTV-boot-diagnosis-${{ github.run_id }}
+          path: ${{ runner.temp }}/reytv-diagnosis/
+          if-no-files-found: warn
+          retention-days: 7
