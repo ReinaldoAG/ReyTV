@@ -47,7 +47,7 @@ jobs:
             debian:trixie bash -euc '
               timeout 150 apt-get update
               timeout 150 apt-get install -y --no-install-recommends \
-                xorriso initramfs-tools-core qemu-system-x86
+                xorriso initramfs-tools-core qemu-system-x86 zstd
               bash /src/tests/iso-boot-smoke.sh \
                 /iso/reytv-amd64.hybrid.iso /reports
             '
