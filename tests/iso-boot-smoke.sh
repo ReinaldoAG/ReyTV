@@ -9,7 +9,7 @@ REPORT_DIR="${2:?Indica un directorio para guardar los registros}"
 [[ -s "$ISO_PATH" ]] || { echo "No existe la ISO: $ISO_PATH" >&2; exit 1; }
 mkdir -p -- "$REPORT_DIR"
 
-for executable in xorriso lsinitramfs qemu-system-x86_64 timeout; do
+for executable in xorriso lsinitramfs qemu-system-x86_64; do
   command -v "$executable" >/dev/null || {
     echo "Falta instalar $executable" >&2
     exit 1
@@ -18,8 +18,11 @@ done
 
 # No damos por buena una ISO por tener un sector de arranque: necesitamos
 # que el kernel y su initrd existan dentro del fichero realmente publicado.
-xorriso -indev "$ISO_PATH" -find /live -name 'vmlinuz-*' -type f \
-  > "$REPORT_DIR/kernels.txt" 2> "$REPORT_DIR/xorriso-kernels.log"
+if ! xorriso -indev "$ISO_PATH" -find /live -name 'vmlinuz-*' \
+  > "$REPORT_DIR/kernels.txt" 2> "$REPORT_DIR/xorriso-kernels.log"; then
+  cat "$REPORT_DIR/xorriso-kernels.log" >&2
+  exit 1
+fi
 mapfile -t kernels < "$REPORT_DIR/kernels.txt"
 if [[ ${#kernels[@]} -ne 1 ]]; then
   echo "Se esperaba un único kernel Live; encontrados: ${#kernels[@]}" >&2
@@ -32,7 +35,10 @@ initrd_path="/live/initrd.img-$version"
 xorriso -osirrox on -indev "$ISO_PATH" \
   -extract "$kernel_path" "$REPORT_DIR/vmlinuz" \
   -extract "$initrd_path" "$REPORT_DIR/initrd.img" \
-  > "$REPORT_DIR/xorriso-extract.log" 2>&1
+  > "$REPORT_DIR/xorriso-extract.log" 2>&1 || {
+    cat "$REPORT_DIR/xorriso-extract.log" >&2
+    exit 1
+  }
 test -s "$REPORT_DIR/vmlinuz"
 test -s "$REPORT_DIR/initrd.img"
 echo "Kernel: $kernel_path; initrd: $initrd_path"

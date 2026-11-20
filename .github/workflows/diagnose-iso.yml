@@ -46,11 +46,3 @@ jobs:
             "$RUNNER_TEMP/reytv-original/reytv-amd64.hybrid.iso" \
             "$RUNNER_TEMP/reytv-diagnosis"
 
-      - name: Guardar registros de diagnóstico
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ReyTV-boot-diagnosis-${{ github.run_id }}
-          path: ${{ runner.temp }}/reytv-diagnosis/
-          if-no-files-found: warn
-          retention-days: 7
