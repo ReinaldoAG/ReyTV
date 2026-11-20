@@ -13,6 +13,7 @@ on:
     paths:
       - '.github/workflows/diagnose-iso.yml'
       - 'tests/iso-boot-smoke.sh'
+      - 'tests/iso-uefi-smoke.sh'
 
 permissions:
   contents: read
@@ -47,8 +48,11 @@ jobs:
             debian:trixie bash -euc '
               timeout 150 apt-get update
               timeout 150 apt-get install -y --no-install-recommends \
-                xorriso initramfs-tools-core qemu-system-x86 zstd
+                xorriso initramfs-tools-core qemu-system-x86 zstd \
+                ovmf tesseract-ocr
               bash /src/tests/iso-boot-smoke.sh \
+                /iso/reytv-amd64.hybrid.iso /reports
+              bash /src/tests/iso-uefi-smoke.sh \
                 /iso/reytv-amd64.hybrid.iso /reports
             '
 
