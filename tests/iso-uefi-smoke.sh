@@ -56,7 +56,7 @@ if [[ "$monitor_connected" != true ]]; then
 fi
 
 last_second=0
-detected_boot=false
+left_grub_menu=false
 for second in 15 40 70 100; do
   sleep "$((second - last_second))"
   last_second="$second"
@@ -81,15 +81,20 @@ for second in 15 40 70 100; do
     echo 'FALLO: el arranque UEFI por GRUB reprodujo el kernel panic' >&2
     exit 1
   fi
-  if grep -Eiq 'Debian GNU/Linux|ReyTV|GNU GRUB|Live system|login:' "$output"; then
-    detected_boot=true
+  if [[ "$second" -eq 15 ]]; then
+    # El menú Debian Live no tiene por qué arrancar automáticamente: GRUB
+    # puede quedarse esperando indefinidamente. Elegimos Live como el usuario.
+    echo 'Pulsando Enter en el menú Live de GRUB...'
+    printf 'sendkey ret\n' >&3
+  elif ! grep -Eiq 'Live system \(amd64\)|Start installer with speech|Advanced install options' "$output"; then
+    left_grub_menu=true
   fi
   kill -0 "$qemu_pid" 2>/dev/null || break
 done
 
-if [[ "$detected_boot" != true ]]; then
-  echo 'No se pudo identificar el estado de arranque mediante OCR; revisar capturas.' >&2
+if [[ "$left_grub_menu" != true ]]; then
+  echo 'FALLO: la VM permaneció en el menú GRUB pese a pulsar Enter.' >&2
   exit 1
 fi
-echo 'UEFI/GRUB: no se reconoció un kernel panic en las capturas OCR.'
+echo 'UEFI/GRUB: la VM salió del menú Live y no se reconoció kernel panic.'
 echo 'Esta prueba NO demuestra todavía que el escritorio haya arrancado.'
