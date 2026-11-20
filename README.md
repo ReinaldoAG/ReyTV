@@ -72,7 +72,7 @@ Es una distribución Linux personalizable que se actualiza **por paquetes**, no 
 
 ## Construir la ISO en tu propia computadora Linux
 
-En una máquina de compilación Ubuntu/Debian x86-64 con suficiente espacio disponible (recomendamos 20 GB libres y conexión rápida):
+En una máquina de compilación **Debian 13 (trixie)** x86-64 con suficiente espacio disponible (recomendamos 20 GB libres y conexión rápida):
 
 ```bash
 sudo apt-get update
@@ -81,7 +81,7 @@ bash tests/iso-smoke.sh
 sudo bash iso/build.sh
 ```
 
-La imagen se genera en `.build-iso/reytv-amd64.hybrid.iso` junto con su checksum. No ejecuta `dd`, no particiona discos y no modifica el firmware. El workflow de GitHub Actions realiza estos mismos pasos y conserva la ISO como un artefacto descargable.
+La imagen se genera en `.build-iso/reytv-amd64.hybrid.iso` junto con su checksum. No ejecuta `dd`, no particiona discos y no modifica el firmware. El workflow de GitHub Actions usa un contenedor **Debian 13** para evitar el `live-build` anticuado incluido en Ubuntu 24.04 y conserva la ISO como un artefacto descargable.
 
 ## Controles y futura compatibilidad
 

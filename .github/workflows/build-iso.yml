@@ -28,21 +28,29 @@ jobs:
       - name: Comprobar integridad de fuentes
         run: bash tests/iso-smoke.sh
 
-      - name: Instalar herramientas para Debian Live
+      - name: Compilar sistema y su instalador con Debian 13
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            live-build debootstrap xorriso squashfs-tools isolinux syslinux-common \
-            grub-pc-bin grub-efi-amd64-bin dosfstools mtools
-
-      - name: Compilar sistema y su instalador
-        run: sudo bash iso/build.sh "$RUNNER_TEMP/reytv-build"
+          # Ubuntu 24.04 tiene live-build 3.0, incompatible con los argumentos
+          # de live-build de Debian 13. Compilamos dentro de Debian trixie.
+          mkdir -p "$RUNNER_TEMP/reytv-build"
+          docker run --rm --privileged \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=/src,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/reytv-build,target=/build" \
+            -e DEBIAN_FRONTEND=noninteractive \
+            debian:trixie bash -euc '
+              apt-get update
+              apt-get install -y --no-install-recommends \
+                live-build debootstrap xorriso squashfs-tools isolinux syslinux-common \
+                grub-pc-bin grub-efi-amd64-bin dosfstools mtools ca-certificates
+              lb --version
+              bash /src/iso/build.sh /build
+              xorriso -indev /build/reytv-amd64.hybrid.iso -report_el_torito plain
+            '
 
       - name: Validar integridad y opciones de arranque de la ISO
         run: |
           cd "$RUNNER_TEMP/reytv-build"
           sha256sum --check reytv-amd64.hybrid.iso.sha256
-          xorriso -indev reytv-amd64.hybrid.iso -report_el_torito plain
           test "$(stat -c %s reytv-amd64.hybrid.iso)" -gt 100000000
 
       - name: Publicar ISO descargable como artefacto
