@@ -35,6 +35,8 @@ lb config \
   --architecture amd64 \
   --binary-image iso-hybrid \
   --debian-installer live \
+  --chroot-squashfs-compression-type zstd \
+  --chroot-squashfs-compression-level 3 \
   --archive-areas 'main contrib non-free-firmware' \
   --image-name 'reytv' \
   --iso-application "ReyTV $VERSION" \
