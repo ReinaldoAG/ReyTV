@@ -97,6 +97,11 @@
     .settings-panel h2 {margin:0 0 8px;}
     .settings-panel p {line-height:1.7;color:#a4a8b8;}
     .settings-panel ul {line-height:2;color:#c6c7d5;}
+    .update-box {border:1px solid rgba(174,151,249,.28);background:#ae97f91a;border-radius:17px;padding:21px;margin-top:23px;}
+    .update-box h3 {margin:0 0 8px;font-size:18px;}
+    .update-box p {margin:7px 0 16px;font-size:13px;}
+    .update-actions {display:flex;flex-wrap:wrap;gap:10px;}
+    .update-message {min-height:24px;color:#d9caff;font-size:13px;white-space:pre-wrap;}
     @media(max-width:960px){.shell{padding:20px 25px 50px}.lefthead{gap:20px}.hero{grid-template-columns:1fr .72fr}.grid{grid-template-columns:repeat(3,minmax(0,1fr));}.orb{left:5%;}.nav button{padding:10px;}}
     @media(max-width:650px){.topbar{flex-wrap:wrap}.nav{order:3;width:100%;justify-content:space-between}.nav button{flex:1}.righthead{margin-left:auto}.hero{grid-template-columns:1fr;min-height:0}.hero-copy{padding:32px}.hero-art{min-height:190px}.orb{width:265px;height:265px;left:35%;top:-35%}.orb-ring{width:300px;height:160px;left:20%}.art-label{right:10%;bottom:12%}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.app-card,.utility-card{min-height:145px;padding:15px}.app-card::after{right:11px}.footer{display:block}.footer>span{display:block;margin:10px 0}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.app-card{transition:none}}
@@ -188,7 +193,7 @@
       const b=document.createElement('button'); b.type='button';b.className='utility-card';b.innerHTML='<span class="utility-icon">＋</span><span><strong>Añadir servicio</strong><small>Crea un acceso a otra página web</small></span>';b.addEventListener('click',()=>openModal('add'));return b;
     }
     function render(){
-      const sections={inicio:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','ReyTV 0.2']};
+      const sections={inicio:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','ReyTV']};
       const [title,chip]=sections[page]; $('section-heading').textContent=title;$('section-chip').textContent=chip;
       $('hero').classList.toggle('hidden',page!=='inicio');$('searchrow').classList.toggle('hidden',page!=='aplicaciones');
       document.querySelectorAll('[data-page]').forEach(btn=>{if(btn.dataset.page===page)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});
@@ -197,12 +202,50 @@
       if(page==='ajustes'){
         const panel=document.createElement('div');panel.id='settings';panel.className='settings-panel';
         panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>ReyTV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a ReyTV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
-        const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);$('content').appendChild(panel);return;
+        const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);
+        const update=document.createElement('div');update.className='update-box';update.innerHTML='<h3>Actualizaciones de ReyTV</h3><p>Actualiza el menú sin pendrive, sin reinstalar Debian y sin perder favoritos.</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><p>Las actualizaciones de seguridad de Debian se gestionan por separado.</p>';panel.appendChild(update);
+        $('content').appendChild(panel);setupUpdates();return;
       }
       const list=allApps().filter(a=>(page==='aplicaciones'||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));
       if(list.length===0){const empty=document.createElement('p');empty.className='empty';empty.textContent=page==='favoritos'?'Todavía no tienes favoritos. Ve a Aplicaciones y marca alguna estrella.':'No hay resultados. Prueba con otra búsqueda.';grid.appendChild(empty);}
       for(const a of list)grid.appendChild(makeAppCard(a));
       if(page==='aplicaciones')grid.appendChild(addCard());
+    }
+    async function setupUpdates(){
+      const message=$('update-message');let token='';
+      const check=$('check-update'),apply=$('apply-update'),undo=$('undo-update');
+      try{
+        const response=await fetch('/api/status',{cache:'no-store'});
+        if(!response.ok)throw new Error('Actualizador no disponible');
+        const data=await response.json();if(!data.ready||!data.token)throw new Error('Actualizador incompleto');
+        token=data.token;check.disabled=false;undo.disabled=false;
+        message.textContent=`Versión instalada: ${data.version||'desconocida'}. Puedes buscar actualizaciones.`;
+      }catch{
+        message.textContent='El actualizador integrado todavía no está instalado en este dispositivo. Se habilita una sola vez; después podrás actualizar desde aquí.';
+        return;
+      }
+      async function action(path){
+        const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','X-ReyTV-Token':token},body:'{}'});
+        const data=await response.json();if(!response.ok)throw new Error(data.error||'Error de actualización');return data;
+      }
+      async function run(button,operation){
+        check.disabled=apply.disabled=undo.disabled=true;message.textContent='Un momento, estamos trabajando...';
+        try{await operation();}
+        catch(error){message.textContent=error.message||'No se pudo completar. Tu versión anterior sigue disponible.';}
+        finally{if(document.body.contains(message)){check.disabled=false;undo.disabled=false;}}
+      }
+      check.addEventListener('click',()=>run(check,async()=>{
+        const data=await action('/api/check');apply.disabled=!data.available;
+        message.textContent=data.available?'¡Hay una actualización disponible! Pulsa «Actualizar ahora».':'ReyTV ya tiene la última versión publicada.';
+      }));
+      apply.addEventListener('click',()=>run(apply,async()=>{
+        const data=await action('/api/update');message.textContent=data.message||'Actualización instalada. Recargando...';
+        window.setTimeout(()=>location.reload(),900);
+      }));
+      undo.addEventListener('click',()=>run(undo,async()=>{
+        await action('/api/rollback');message.textContent='Versión anterior restaurada. Recargando...';
+        window.setTimeout(()=>location.reload(),900);
+      }));
     }
     function goPage(next){if(!['inicio','aplicaciones','favoritos','ajustes'].includes(next))return;page=next;searchText='';$('search').value='';render();window.scrollTo({top:0,behavior:'smooth'});}
     document.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>goPage(btn.dataset.page)));

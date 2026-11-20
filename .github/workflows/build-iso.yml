@@ -9,6 +9,8 @@ on:
       - '.github/workflows/build-iso.yml'
       - 'iso/**'
       - 'linux/reytv-launch'
+      - 'linux/reytv-server.py'
+      - 'linux/reytv-enable-updates.sh'
       - 'linux/reytv-update'
       - 'linux/reytv-rollback'
       - 'linux/systemd/**'

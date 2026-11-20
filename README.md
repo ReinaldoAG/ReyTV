@@ -8,7 +8,7 @@ La ISO personalizada se construye con **Debian 13 (trixie) + LXQt + ReyTV** medi
 
 ### Descargar una ISO compilada
 
-1. Entra en el repositorio privado [ReinaldoAG/ReyTV](https://github.com/ReinaldoAG/ReyTV) con tu sesión de GitHub.
+1. Entra en [ReinaldoAG/ReyTV](https://github.com/ReinaldoAG/ReyTV).
 2. Abre [Actions → Compilar ISO de ReyTV](https://github.com/ReinaldoAG/ReyTV/actions/workflows/build-iso.yml).
 3. Escoge una ejecución **correcta** (marca verde) → **Artifacts** → descarga `ReyTV-...-amd64-ISO.zip`.
 4. Descomprime el ZIP: encontrarás `reytv-amd64.hybrid.iso` y `reytv-amd64.hybrid.iso.sha256`. Comprueba su SHA256 antes de usarla.
@@ -43,32 +43,34 @@ El script descarga el paquete `.deb` directamente desde `dl.google.com` y deja q
 | --- | --- | --- |
 | Kernel, Debian, dependencias y parches de seguridad | `unattended-upgrades` de Debian | Descarga e instala automáticamente los parches cubiertos por su configuración oficial. |
 | Resto de paquetes, escritorio y navegadores instalados con APT | `sudo reytv-system-update` | Revisa y propone una actualización **completa de paquetes** (`apt full-upgrade`), con confirmación. |
-| Interfaz ReyTV (`index.html`) | `reytv-update` | Descarga desde GitHub, hace copia de la interfaz y permite `reytv-rollback`. Requiere configurar acceso SSH de solo lectura al repositorio privado. |
+| Interfaz ReyTV (`index.html`) | Botones en **Ajustes → Actualizaciones** | Comprueba GitHub público por HTTPS, instala el menú y permite volver a la versión anterior. No necesita claves SSH ni privilegios de root. |
 | Salto de Debian 13 a Debian 14 o firmware | **No automático todavía** | Se hará con una versión probada y un plan de respaldo; no es seguro prometer un A/B rollback en un SSD de 16 GB. |
 
-Es una distribución Linux personalizable que se actualiza **por paquetes**, no un sistema Android ni un firmware con actualizaciones atómicas A/B. Actualizaciones de kernel pueden exigir reinicio. El repositorio privado no debe incluir claves de GitHub, cuentas de Netflix ni contraseñas.
+Es una distribución Linux personalizable que se actualiza **por paquetes**, no un sistema Android ni un firmware con actualizaciones atómicas A/B. Las actualizaciones del kernel pueden exigir reinicio. Nunca almacenes contraseñas, claves personales ni cuentas de Netflix en el repositorio público.
 
-#### Configurar actualizaciones de la interfaz desde GitHub
+#### Actualizar el menú sin terminal (nuevas instalaciones)
 
-1. En el Chromebox instalado, crea una deploy key SSH **de solo lectura**:
+1. Abre **Ajustes** en ReyTV.
+2. Pulsa **Buscar actualizaciones** y después **Actualizar ahora** si aparece una versión nueva.
+3. El menú se recarga con el cambio. **Volver a la versión anterior** restaura la última copia si es necesario.
+4. El comprobador diario usa `systemctl --user` y descarga cambios del repositorio público por HTTPS. No ejecuta comandos recibidos del navegador ni eleva permisos.
 
-   ```bash
-   mkdir -p ~/.ssh
-   chmod 700 ~/.ssh
-   ssh-keygen -t ed25519 -f ~/.ssh/reytv_deploy -N '' -C 'ReyTV CN60'
-   cat ~/.ssh/reytv_deploy.pub
-   ```
+La interfaz de Ajustes solo controla el menú web. **No es un actualizador completo del kernel, del firmware ni de la versión mayor de Debian**; esa parte sigue usando APT y requiere intervención por separado.
 
-2. Copia solamente la **clave pública** a `ReinaldoAG/ReyTV → Settings → Deploy keys → Add deploy key` sin marcar «Allow write access». Comprueba la huella del servidor SSH de GitHub con su documentación oficial antes de aceptar la conexión.
-3. Prueba la descarga y luego habilita la verificación diaria:
+#### Habilitar el botón en una ISO ya instalada (una sola vez)
 
-   ```bash
-   reytv-update
-   systemctl --user daemon-reload
-   systemctl --user enable --now reytv-update.timer
-   ```
+Las ISO previas a la incorporación de `reytv-server.py` utilizaban el servidor web estático y no tienen el API para actualizar con un botón. Su instalación se puede conservar. Tras hacer público este repositorio, descarga el instalador de transición desde GitHub y ejecútalo con tu usuario normal (no con `sudo`):
 
-4. Si una interfaz nueva falla, ejecuta `reytv-rollback`. Se bloqueará temporalmente esa revisión y se esperará una nueva versión. El actualizador **solo cambia la interfaz web**: los scripts del sistema se entregan mediante futuras revisiones empaquetadas o nuevos instaladores.
+```bash
+curl -fsSL --proto '=https' --proto-redir '=https' \
+  https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh \
+  -o /tmp/reytv-enable-updates.sh
+bash /tmp/reytv-enable-updates.sh
+```
+
+El instalador comprueba los archivos antes de copiarlos, guarda respaldo del menú, instala el servicio local en `~/.local/bin`, configura el inicio y activa el temporizador diario. **Reinicia una vez** y ya podrás usar los botones de Ajustes. No reconfigura particiones ni elimina otros sistemas. Como cualquier instalador descargado de Internet, ejecútalo únicamente si confías en el repositorio y en su contenido.
+
+Si falla una actualización, usa el botón de restauración o ejecuta `reytv-rollback`. Se bloqueará temporalmente esa revisión y se esperará una versión nueva. El actualizador **solo cambia el menú HTML**: nuevos scripts o servicios se entregarán en futuras versiones empaquetadas y revisadas. No es una actualización atómica del sistema operativo.
 
 ## Construir la ISO en tu propia computadora Linux
 

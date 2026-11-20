@@ -7,7 +7,7 @@ APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/reytv"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/reytv"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/reytv"
 CLONE="$CACHE_DIR/git-source"
-REPO="${REYTV_REPO_URL:-git@github.com:ReinaldoAG/ReyTV.git}"
+REPO="${REYTV_REPO_URL:-https://github.com/ReinaldoAG/ReyTV.git}"
 BRANCH="${REYTV_CHANNEL:-main}"
 FORCE=0
 
@@ -20,18 +20,22 @@ command -v git >/dev/null || { echo 'Instala git antes de actualizar ReyTV.' >&2
 
 mkdir -p "$STATE_DIR" "$CACHE_DIR"
 
-# Si se creó una deploy key exclusiva para ReyTV, úsala con SSH no interactivo.
-# Si no existe, git usará la configuración SSH habitual del usuario.
-if [[ -f "$HOME/.ssh/reytv_deploy" ]]; then
-  export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -i $HOME/.ssh/reytv_deploy"
-else
-  export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes'
+# El canal público solo necesita HTTPS. Para instalaciones antiguas que todavía
+# usen un repositorio SSH privado se mantiene la compatibilidad con deploy keys.
+if [[ "$REPO" == git@* ]]; then
+  if [[ -f "$HOME/.ssh/reytv_deploy" ]]; then
+    export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -i $HOME/.ssh/reytv_deploy"
+  else
+    export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes'
+  fi
 fi
 
 if [[ ! -d "$CLONE/.git" ]]; then
   git clone --quiet --no-checkout --depth 1 --single-branch --branch "$BRANCH" -- "$REPO" "$CLONE"
   NEXT_SHA="$(git -C "$CLONE" rev-parse HEAD)"
 else
+  # Al pasar del canal privado SSH a HTTPS no reutilizar la URL anterior.
+  git -C "$CLONE" remote set-url origin "$REPO"
   git -C "$CLONE" fetch --quiet --depth 1 origin "$BRANCH"
   NEXT_SHA="$(git -C "$CLONE" rev-parse FETCH_HEAD)"
 fi

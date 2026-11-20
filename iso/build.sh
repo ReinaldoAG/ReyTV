@@ -52,8 +52,12 @@ install -m 0644 "$PROJECT_ROOT/iso/packages.list.chroot" config/package-lists/re
 cp -a -- "$PROJECT_ROOT/iso/files/." config/includes.chroot/
 install -m 0644 "$PROJECT_ROOT/index.html" config/includes.chroot/usr/local/share/reytv/index.html
 install -m 0755 "$PROJECT_ROOT/linux/reytv-launch" config/includes.chroot/usr/local/bin/reytv
+install -m 0644 "$PROJECT_ROOT/linux/reytv-server.py" config/includes.chroot/usr/local/bin/reytv-server.py
 install -m 0755 "$PROJECT_ROOT/linux/reytv-update" config/includes.chroot/usr/local/bin/reytv-update
 install -m 0755 "$PROJECT_ROOT/linux/reytv-rollback" config/includes.chroot/usr/local/bin/reytv-rollback
+install -d -m 0755 config/includes.chroot/etc/skel/.local/bin
+install -m 0755 "$PROJECT_ROOT/linux/reytv-update" config/includes.chroot/etc/skel/.local/bin/reytv-update
+install -m 0755 "$PROJECT_ROOT/linux/reytv-rollback" config/includes.chroot/etc/skel/.local/bin/reytv-rollback
 install -m 0755 "$PROJECT_ROOT/iso/files/usr/local/bin/reytv-system-update" config/includes.chroot/usr/local/bin/reytv-system-update
 install -m 0755 "$PROJECT_ROOT/iso/files/usr/local/bin/reytv-install-chrome" config/includes.chroot/usr/local/bin/reytv-install-chrome
 install -m 0644 "$PROJECT_ROOT/linux/systemd/reytv-update.service" config/includes.chroot/etc/skel/.config/systemd/user/reytv-update.service

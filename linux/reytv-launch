@@ -37,8 +37,15 @@ fi
 mkdir -p "$STATE_DIR" "$CONFIG_DIR"
 PIDFILE="$STATE_DIR/http.pid"
 if [[ ! -s "$PIDFILE" ]] || ! kill -0 "$(<"$PIDFILE")" 2>/dev/null; then
-  nohup python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$APP_DIR" \
-    >>"$STATE_DIR/http.log" 2>&1 </dev/null &
+  SERVER="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/reytv-server.py"
+  if [[ -f "$SERVER" ]]; then
+    nohup python3 "$SERVER" --port "$PORT" --app-dir "$APP_DIR" --state-dir "$STATE_DIR" \
+      >>"$STATE_DIR/http.log" 2>&1 </dev/null &
+  else
+    # Compatibilidad con una instalación antigua sin módulo de actualización.
+    nohup python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$APP_DIR" \
+      >>"$STATE_DIR/http.log" 2>&1 </dev/null &
+  fi
   echo "$!" > "$PIDFILE"
 fi
 
