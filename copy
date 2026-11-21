@@ -1,18 +1,20 @@
 # REYTV - COMANDOS PARA EL CHROMEBOX
-# Copia SOLAMENTE una línea de comando por vez en la terminal.
-# No copies las líneas que comienzan con #.
+# Copia SOLO una línea de comando por vez, no las líneas con #.
 
-# PASO 1 - Activar la sincronización automática de fecha y hora.
-# Te puede pedir la contraseña del usuario reytv.
-sudo timedatectl set-ntp true
+# PASO 1 - Configurar zona horaria de Argentina.
+sudo timedatectl set-timezone America/Argentina/Buenos_Aires
 
-# PASO 2 - Comprobar que la hora y fecha sean correctas.
-# Comprueba "System clock synchronized: yes" y la fecha actual.
-timedatectl status
+# PASO 2 - Corregir el reloj manualmente (NTP no disponible).
+# Hora aproximada de la sesión: 20 de noviembre de 2026, 21:49 Argentina.
+# Si lo haces más tarde, cambia la fecha y hora por las de tu teléfono.
+sudo date -s "2026-11-20 21:49:00 -0300"
 
-# PASO 3 - SOLO si la fecha ya es correcta: instalar el actualizador de ReyTV.
+# PASO 3 - Comprobar que la fecha y hora estén bien.
+date
+
+# PASO 4 - Si el reloj ya está correcto, instalar el actualizador.
 curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh -o /tmp/reytv-setup.sh && bash /tmp/reytv-setup.sh
 
-# Cuando aparezca "Actualizador instalado", reinicia el Chromebox.
-# Despues podras buscar actualizaciones desde ReyTV > Ajustes.
-# No uses curl -k ni --insecure: el error SSL se corrige arreglando el reloj.
+# Cuando diga "Actualizador instalado", avisa antes de reiniciar.
+# Más adelante configuraremos la sincronización automática.
+# No desactives la verificación SSL (curl -k).
