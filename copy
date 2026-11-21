@@ -1,20 +1,9 @@
-# REYTV - COMANDOS PARA EL CHROMEBOX
-# Copia SOLO una línea de comando por vez, no las líneas con #.
+# REYTV - DIAGNÓSTICO DESPUÉS DEL REINICIO
+# Copia únicamente la línea siguiente en la terminal, pulsa Enter y envía una foto.
+# No modifica nada. No necesita sudo.
 
-# PASO 1 - Configurar zona horaria de Argentina.
-sudo timedatectl set-timezone America/Argentina/Buenos_Aires
+date; echo "=== ARRANQUE ==="; findmnt -no SOURCE,FSTYPE /; cat /proc/cmdline; echo "=== USUARIO Y ARCHIVOS ==="; whoami; ls -l ~/.local/bin/reytv ~/.local/bin/reytv-server.py ~/.config/autostart/reytv.desktop ~/.local/share/reytv/index.html; grep -oc 'Actualizaciones de ReyTV' ~/.local/share/reytv/index.html; echo "=== SERVIDOR ==="; curl -s --max-time 3 -o /dev/null -w 'API HTTP: %{http_code}\n' http://127.0.0.1:18763/api/status
 
-# PASO 2 - Corregir el reloj manualmente (NTP no disponible).
-# Hora aproximada de la sesión: 20 de noviembre de 2026, 21:49 Argentina.
-# Si lo haces más tarde, cambia la fecha y hora por las de tu teléfono.
-sudo date -s "2026-11-20 21:49:00 -0300"
-
-# PASO 3 - Comprobar que la fecha y hora estén bien.
-date
-
-# PASO 4 - Si el reloj ya está correcto, instalar el actualizador.
-curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh -o /tmp/reytv-setup.sh && bash /tmp/reytv-setup.sh
-
-# Cuando diga "Actualizador instalado", avisa antes de reiniciar.
-# Más adelante configuraremos la sincronización automática.
-# No desactives la verificación SSL (curl -k).
+# No reinstales ni formatees nada hasta revisar el resultado.
+# Instalador original (solo si se indica repetirlo y la fecha es correcta):
+# curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh -o /tmp/reytv-setup.sh && bash /tmp/reytv-setup.sh
