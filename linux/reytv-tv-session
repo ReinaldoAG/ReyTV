@@ -10,23 +10,24 @@ APP="$DATA/reytv"
 STATE="$STATE/reytv"
 PROFILE="$CONF/reytv/chrome-profile"
 URL='http://127.0.0.1:18763/index.html?tv=1'
-if [ "$1" = "--home" ] 2>/dev/null; then
+if [ "${1:-}" = "--home" ] 2>/dev/null; then
   if [[ "$REYTV_TV_PID" =~ ^[0-9]+$ ]]; then kill -USR1 "$REYTV_TV_PID"; fi
   exit
 fi
-if [ "$1" = "--exit" ] 2>/dev/null; then
+if [ "${1:-}" = "--exit" ] 2>/dev/null; then
   if [[ "$REYTV_TV_PID" =~ ^[0-9]+$ ]]; then kill -TERM "$REYTV_TV_PID"; fi
   exit
 fi
+mkdir -p "$STATE" "$PROFILE"
+exec >>"$STATE/tv-session.log" 2>&1
+printf "\n=== Sesion TV 0.3.1: %s ===\n" "$(date -Is)"
 [ -s "$APP/index.html" ] && [ -s "$BIN/reytv-server.py" ] || { echo "Falta la instalación de ReyTV."; exit 1; }
 browser=''
 for name in google-chrome-stable google-chrome chromium chromium-browser; do
   if command -v "$name" >/dev/null; then browser=$(command -v "$name"); break; fi
 done
 [ -n "$browser" ] || exit 1
-mkdir -p "$STATE" "$PROFILE"
-exec >>"$STATE/tv-session.log" 2>&1
-export REYTV_TV_PID=$$
+export REYTV_TV_PID=$
 export XDG_CURRENT_DESKTOP=ReyTV
 export XDG_SESSION_DESKTOP=reytv-tv
 # Exponer el DISPLAY a los servicios de usuario, sin iniciar LXQt.
@@ -66,9 +67,20 @@ done
 failures=0
 while kill -0 "$wm" 2>/dev/null; do
   want_home=0
+  if ! curl -fsS --max-time 2 http://127.0.0.1:18763/api/status >/dev/null 2>&1; then
+    echo "Backend no disponible durante la sesion; intentando restaurar."
+    python3 "$BIN/reytv-server.py" --app-dir "$APP" --state-dir "$STATE" --bin-dir "$BIN" &
+    server=$!
+    ready=0
+    for i in $(seq 1 40); do
+      if curl -fsS --max-time 1 http://127.0.0.1:18763/api/status >/dev/null 2>&1; then ready=1; break; fi
+      sleep .25
+    done
+    [ "$ready" = 1 ] || exit 1
+  fi
   started=$(date +%s)
   # Conserva el perfil existente; no desactiva el sandbox ni TLS.
-  setsid "$browser" --user-data-dir="$PROFILE" --kiosk --no-first-run --no-default-browser-check --disable-session-crashed-bubble --ozone-platform=x11 "$URL" &
+  setsid "$browser" --user-data-dir="$PROFILE" --kiosk --no-first-run --no-default-browser-check --disable-session-crashed-bubble --disable-features=Translate --lang=es --ozone-platform=x11 "$URL" &
   child=$!
   wait "$child" || true
   # wait puede interrumpirse por USR1. Esperar la salida y limpiar el grupo.

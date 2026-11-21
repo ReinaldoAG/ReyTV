@@ -6,6 +6,7 @@
   <keyboard>
     <keybind key="F8"><action name="Execute"><command>/usr/local/bin/reytv-tv-session --home</command></action></keybind>
     <keybind key="XF86HomePage"><action name="Execute"><command>/usr/local/bin/reytv-tv-session --home</command></action></keybind>
+    <keybind key="C-A-m"><action name="Execute"><command>qterminal</command></action></keybind>
     <keybind key="C-A-Escape"><action name="Execute"><command>/usr/local/bin/reytv-tv-session --exit</command></action></keybind>
   </keyboard>
   <mouse/>

@@ -1,8 +1,12 @@
-# REYTV - REPARAR EL REGISTRO DE LA SESIÓN TV
-# Desde LXQt, abre una terminal y copia SOLO la línea siguiente.
-# No reinicies todavía; envía una foto del resultado completo.
+# REYTV 0.3.1 - ARRANQUE LIMPIO
+# Desde ReyTV 0.3, pulsa Ctrl+Alt+Esc para salir al selector de sesiones.
+# Elige LXQt e inicia sesión. Abre esta página en Chromium y QTerminal.
+# Copia SOLO la línea siguiente, sin los comentarios:
+curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
 
-curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh && ls -l /usr/share/xsessions/reytv-tv.desktop /etc/sddm.conf && cat /etc/sddm.conf
-
-# Deben existir ambos archivos y aparecer Session=reytv-tv.desktop.
-# No ejecutar ningún comando de rescate de instrucciones anteriores.
+# Debe decir MODO TV INSTALADO Y VERIFICADO.
+# Apaga por completo y vuelve a encender (no uses reboot por ahora).
+# Si aparece una solicitud de contraseña, toma una foto ANTES de escribirla.
+# F8: inicio; Ctrl+Alt+M: terminal de mantenimiento (nuevo); Ctrl+Alt+Esc: selector.
+# Diagnóstico opcional si todavía pide contraseña (no muestra contraseñas):
+sudo journalctl -b -u sddm --no-pager -n 35

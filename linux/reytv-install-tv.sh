@@ -21,7 +21,7 @@ src="$temp/src"
 revision=$(git -C "$src" rev-parse HEAD)
 for script in reytv-tv-session reytv-tv-disable; do bash -n "$src/linux/$script"; done
 python3 -c 'import sys,xml.etree.ElementTree as E; E.parse(sys.argv[1])' "$src/linux/openbox-tv.xml"
-grep -Fq 'ReyTV · 0.3.0' "$src/index.html"
+grep -Eq 'ReyTV · 0\.3\.[0-9]+' "$src/index.html"
 grep -Fq 'Actualizaciones de ReyTV' "$src/index.html"
 sudo -v
 if ! command -v unclutter >/dev/null; then
@@ -85,7 +85,15 @@ if ! sudo test -f "$backup/active"; then
 fi
 # Activa la sesión solamente al final y no reinicia automáticamente.
 sudo install -m 0644 "$temp/new.conf" /etc/sddm.conf
+# Verificar la instalación antes de indicar que se puede apagar.
+sudo test -s /etc/sddm.conf
+sudo test -s /usr/share/xsessions/reytv-tv.desktop
+sudo test -x /usr/local/bin/reytv-tv-session
+cmp -s "$temp/new.conf" /etc/sddm.conf
+sed -n '/^\[Autologin\]/,/^\[/p' /etc/sddm.conf
+grep -F -- '--disable-features=Translate' /usr/local/bin/reytv-tv-session >/dev/null
+sync
 echo
-echo 'MODO TV INSTALADO. Reinicia el Chromebox.'
-echo 'F8: volver a Inicio. Ctrl+Alt+Esc: salir al selector de sesiones.'
+echo 'MODO TV INSTALADO Y VERIFICADO. Apaga completamente el Chromebox y vuelve a encenderlo.'
+echo 'F8: volver a Inicio. Ctrl+Alt+M: terminal (despues del arranque). Ctrl+Alt+Esc: selector de sesiones.'
 echo 'Rescate: Ctrl+Alt+F3, iniciar sesión, sudo reytv-tv-disable, sudo reboot.'

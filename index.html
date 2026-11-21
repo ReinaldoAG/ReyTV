@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <meta name="google" content="notranslate" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#090b13" />
@@ -138,7 +139,7 @@
 
     <section id="hero" class="hero" aria-label="Presentación">
       <div class="hero-copy"><span class="eyebrow">Tu espacio de entretenimiento</span><h1>Tu pantalla.<br /><span>Tus reglas.</span></h1><p>Todo lo que te gusta, en un solo lugar. Elige un servicio con las flechas del teclado y presiona Enter para abrirlo.</p><button class="primary" id="watch" type="button">▶ &nbsp; Abrir YouTube</button></div>
-      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.3.0</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.3.1</div></div>
     </section>
 
     <section id="content" aria-live="polite">
@@ -220,7 +221,7 @@
         panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>ReyTV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a ReyTV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
         const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);
         const update=document.createElement('div');update.className='update-box';update.innerHTML='<h3>Actualizaciones de ReyTV</h3><p>Actualiza el menú sin pendrive, sin reinstalar Debian y sin perder favoritos.</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><p>Las actualizaciones de seguridad de Debian se gestionan por separado.</p>';panel.appendChild(update);
-        if(TV_MODE){const hint=document.createElement('p');hint.textContent='Modo TV: F8 vuelve al inicio desde cualquier servicio; F2 marca la aplicación seleccionada como favorita. Ctrl + Alt + Esc sale al acceso de mantenimiento.';panel.prepend(hint);}
+        if(TV_MODE){const hint=document.createElement('p');hint.textContent='Modo TV: F8 vuelve al inicio desde cualquier servicio; F2 marca la aplicación seleccionada como favorita. Ctrl + Alt + M abre la terminal de mantenimiento; Ctrl + Alt + Esc sale al selector de sesión.';panel.prepend(hint);}
         $('content').appendChild(panel);setupUpdates();return;
       }
       const list=allApps().filter(a=>(page==='aplicaciones'||(TV_MODE&&page==='inicio')||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));
