@@ -1,18 +1,8 @@
-# REYTV 0.3 - DIAGNOSTICAR MODO TV
-# Si ves ERR_CONNECTION_REFUSED, prueba F8 una sola vez.
-# Para salir del modo TV: Ctrl+Alt+Esc y elegir LXQt en SDDM.
-# Alternativa: Ctrl+Alt+F3, iniciar sesión como reytv con tu contraseña.
-# No reiniciar antes de recoger el registro.
+# REYTV - REPARAR EL REGISTRO DE LA SESIÓN TV
+# Desde LXQt, abre una terminal y copia SOLO la línea siguiente.
+# No reinicies todavía; envía una foto del resultado completo.
 
-# DIAGNÓSTICO (no cambia nada):
-tail -40 ~/.local/state/reytv/tv-session.log
-ss -ltn
-pgrep -af reytv
-curl -s --max-time 3 -o /dev/null -w 'API HTTP: %{http_code}\n' http://127.0.0.1:18763/api/status
+curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh && ls -l /usr/share/xsessions/reytv-tv.desktop /etc/sddm.conf && cat /etc/sddm.conf
 
-# RESCATE (solo si quieres recuperar el escritorio anterior):
-sudo reytv-tv-disable
-sudo reboot
-
-# Instalador original del modo TV (no repetir hasta revisar el diagnóstico):
-# curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
+# Deben existir ambos archivos y aparecer Session=reytv-tv.desktop.
+# No ejecutar ningún comando de rescate de instrucciones anteriores.
