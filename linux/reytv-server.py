@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import sys
 import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -33,6 +34,7 @@ class ReyTVServer(ThreadingHTTPServer):
         self.state_dir = Path(state_dir)
         self.csrf = secrets.token_urlsafe(32)
         self.action_lock = threading.Lock()
+        self.restart_requested = False
 
 
 class ReyTVHandler(BaseHTTPRequestHandler):
@@ -139,6 +141,10 @@ class ReyTVHandler(BaseHTTPRequestHandler):
                 return
             self._send(200, {"ok": True, "message": result.stdout.strip()[-500:],
                              "revision": self._current_sha()})
+            # Recargar el backend desde el archivo recién instalado.
+            # Primero respondemos a Chromium; luego liberamos el puerto HTTP.
+            self.server.restart_requested = True
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
         except subprocess.TimeoutExpired:
             self._send(504, {"error": "La operación tardó demasiado; prueba de nuevo más tarde"})
         except OSError:
@@ -204,6 +210,10 @@ def main():
         pass
     finally:
         server.server_close()
+    if server.restart_requested:
+        os.execv(sys.executable, [sys.executable, str(Path(__file__).resolve()),
+                 "--port", str(args.port), "--app-dir", str(args.app_dir),
+                 "--state-dir", str(args.state_dir), "--bin-dir", str(args.bin_dir)])
 
 
 if __name__ == "__main__":
