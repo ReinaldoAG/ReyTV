@@ -59,7 +59,7 @@ class ReyTVHandler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path == "/api/status":
             self._send(200, {"ready": True, "token": self.server.csrf,
-                             "revision": self._current_sha(), "version": self._version()})
+                             "revision": self._current_sha(), "version": self._version(), "full_update": True})
         elif path == "/api/native/status":
             try:
                 self._send(200, self._native().status())
