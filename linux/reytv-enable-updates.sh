@@ -20,7 +20,7 @@ trap 'rm -rf -- "$TEMP"' EXIT
 
 echo 'Descargando componentes oficiales de ReyTV por HTTPS...'
 for file in linux/reytv-launch linux/reytv-update linux/reytv-rollback \
-            linux/reytv-server.py linux/systemd/reytv-update.service \
+            linux/reytv-server.py linux/reytv-native.py linux/systemd/reytv-update.service \
             linux/systemd/reytv-update.timer index.html; do
   mkdir -p -- "$TEMP/$(dirname -- "$file")"
   curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
@@ -28,7 +28,7 @@ for file in linux/reytv-launch linux/reytv-update linux/reytv-rollback \
 done
 
 bash -n "$TEMP/linux/reytv-launch" "$TEMP/linux/reytv-update" "$TEMP/linux/reytv-rollback"
-python3 -m py_compile "$TEMP/linux/reytv-server.py"
+python3 -m py_compile "$TEMP/linux/reytv-server.py" "$TEMP/linux/reytv-native.py"
 if ! grep -Fq '<title>ReyTV' "$TEMP/index.html" || ! grep -Fq '</html>' "$TEMP/index.html"; then
   echo 'El menú descargado no parece válido. No se ha instalado nada.' >&2
   exit 1
@@ -54,6 +54,7 @@ install -m 0755 "$TEMP/linux/reytv-launch" "$BIN/reytv"
 install -m 0755 "$TEMP/linux/reytv-update" "$BIN/reytv-update"
 install -m 0755 "$TEMP/linux/reytv-rollback" "$BIN/reytv-rollback"
 install -m 0644 "$TEMP/linux/reytv-server.py" "$BIN/reytv-server.py"
+install -m 0644 "$TEMP/linux/reytv-native.py" "$BIN/reytv-native.py"
 install -m 0644 "$TEMP/index.html" "$APP/index.html"
 install -m 0644 "$TEMP/linux/systemd/reytv-update.service" "$SERVICES/reytv-update.service"
 install -m 0644 "$TEMP/linux/systemd/reytv-update.timer" "$SERVICES/reytv-update.timer"

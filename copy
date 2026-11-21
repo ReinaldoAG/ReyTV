@@ -1,10 +1,14 @@
-# REYTV 0.3.3 - ARRANQUE SIN AVISO DEL LLAVERO
-# Ctrl+Alt+Esc abre LXQt. Abre GitHub y QTerminal.
-# El modo sin llavero reduce la protección local de contraseñas y sesiones del navegador.
-# No se elimina la contraseña de Debian ni el llavero. No guardes contraseñas sensibles.
-# Copia SOLO este comando si quieres activar el arranque sin aviso:
-f=$(mktemp) && curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o "$f" && bash "$f" --no-keyring
+# REYTV 0.4.0 - AJUSTES NATIVOS EN EL TELEVISOR
+# 1) Desde ReyTV usa Ctrl + Alt + Esc para abrir LXQt de mantenimiento.
+# 2) Abre GitHub en Chromium y QTerminal.
+# 3) Copia SOLO la siguiente línea:
+curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
 
-# Cuando diga MODO TV INSTALADO Y VERIFICADO, apaga completamente y vuelve a encender.
-# Para recuperar la protección del llavero (opcional; no ejecutar ahora):
-# f=$(mktemp) && curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o "$f" && bash "$f" --keyring
+# Debe decir MODO TV INSTALADO Y VERIFICADO.
+# 4) Apaga completamente el Chromebox y vuelve a encenderlo.
+# 5) En ReyTV abre Ajustes > Configuración del dispositivo.
+# Wi-Fi: ver redes, conectar/desconectar. Bluetooth: buscar y conectar dispositivos
+# compatibles sin PIN. Sonido: cambiar volumen/silenciar.
+# Algunas acciones dependen de los permisos de NetworkManager y BlueZ.
+# No se abre LXQt para usar estos controles. Solo para mantenimiento técnico.
+# Si falla algo, Ctrl + Alt + M abre terminal sin salir de ReyTV.

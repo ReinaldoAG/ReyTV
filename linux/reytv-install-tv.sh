@@ -32,7 +32,9 @@ src="$temp/src"
 revision=$(git -C "$src" rev-parse HEAD)
 for script in reytv-tv-session reytv-tv-disable; do bash -n "$src/linux/$script"; done
 python3 -c 'import sys,xml.etree.ElementTree as E; E.parse(sys.argv[1])' "$src/linux/openbox-tv.xml"
-grep -Eq 'ReyTV · 0\.3\.[0-9]+' "$src/index.html"
+python3 -m py_compile "$src/linux/reytv-server.py" "$src/linux/reytv-native.py"
+[ -s "$src/linux/reytv-native.py" ] || { echo 'Faltan los controles nativos.'; exit 1; }
+grep -Eq 'ReyTV · 0\.[0-9]+\.[0-9]+' "$src/index.html"
 grep -Fq 'Actualizaciones de ReyTV' "$src/index.html"
 sudo -v
 if ! command -v unclutter >/dev/null; then
@@ -68,6 +70,9 @@ pathlib.Path(new).write_text("\n".join(out) + "\n")
 PY
 # Instalar primero los archivos de sesión y recuperación, nunca activar a medias.
 sudo install -d -m 0755 /usr/local/share/reytv-tv /usr/local/bin /usr/share/xsessions
+# Actualizar el servidor local y sus controles SIN modificar los favoritos.
+install -m 0644 "$src/linux/reytv-server.py" "$HOME/.local/bin/reytv-server.py"
+install -m 0644 "$src/linux/reytv-native.py" "$HOME/.local/bin/reytv-native.py"
 sudo install -m 0755 "$src/linux/reytv-tv-session" /usr/local/bin/reytv-tv-session
 sudo install -m 0755 "$src/linux/reytv-tv-disable" /usr/local/bin/reytv-tv-disable
 sudo install -m 0644 "$src/linux/openbox-tv.xml" /usr/local/share/reytv-tv/openbox.xml
@@ -114,6 +119,7 @@ sudo test -x /usr/local/bin/reytv-tv-session
 cmp -s "$temp/new.conf" /etc/sddm.conf
 sed -n '/^\[Autologin\]/,/^\[/p' /etc/sddm.conf
 grep -F -- '--disable-features=Translate' /usr/local/bin/reytv-tv-session >/dev/null
+[ -s "$HOME/.local/bin/reytv-native.py" ]
 # Guardar la elección solo para el perfil dedicado de ReyTV.
 keyring_conf="${XDG_CONFIG_HOME:-$HOME/.config}/reytv"
 if [ "$keyring_mode" = basic ]; then

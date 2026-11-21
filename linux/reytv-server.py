@@ -6,6 +6,7 @@ No ejecuta comandos arbitrarios enviados por HTTP.
 """
 
 import argparse
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -57,6 +58,11 @@ class ReyTVHandler(BaseHTTPRequestHandler):
         if path == "/api/status":
             self._send(200, {"ready": True, "token": self.server.csrf,
                              "revision": self._current_sha(), "version": self._version()})
+        elif path == "/api/native/status":
+            try:
+                self._send(200, self._native().status())
+            except (OSError, ImportError) as exc:
+                self._send(503, {"error": "Controles del sistema no instalados."})
         elif path in ("/", "/index.html"):
             try:
                 html = (self.server.app_dir / "index.html").read_bytes()
@@ -69,7 +75,7 @@ class ReyTVHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlsplit(self.path).path
-        if path not in ("/api/check", "/api/update", "/api/rollback"):
+        if path not in ("/api/check", "/api/update", "/api/rollback", "/api/native/action", "/api/native/scan"):
             self._send(404, {"error": "Acción desconocida"})
             return
         # Los sitios externos no pueden solicitar una actualización mediante
@@ -77,13 +83,38 @@ class ReyTVHandler(BaseHTTPRequestHandler):
         origin = f"http://127.0.0.1:{self.server.server_port}"
         if (not self._local_host() or self.headers.get("Origin") != origin
                 or not secrets.compare_digest(self.headers.get("X-ReyTV-Token", ""), self.server.csrf)
-                or self.headers.get("Content-Length", "0") not in ("0", "2")):
+                or not self._body_length_allowed(path)):
+
             self._send(403, {"error": "Solicitud no autorizada"})
             return
         if not self.server.action_lock.acquire(blocking=False):
             self._send(409, {"error": "Ya se está realizando otra operación"})
             return
         try:
+            if path.startswith("/api/native/"):
+                try:
+                    body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+                    native = self._native()
+                    if path == "/api/native/scan":
+                        target = body.get("target")
+                        if type(body) is not dict or set(body) != {"target"} or target not in ("wifi", "bluetooth"):
+                            raise ValueError("Tipo de escaneo incorrecto.")
+                        response = native.wifi_status(True) if target == "wifi" else native.bluetooth_status(True)
+                        self._send(200, response)
+                    else:
+                        if type(body) is not dict or set(body) != {"operation", "params"}:
+                            raise ValueError("Solicitud incorrecta.")
+                        response = native.act(body["operation"], body["params"])
+                        self._send(200, response)
+                except (ValueError, TypeError) as error:
+                    self._send(400, {"error": str(error)[:160]})
+                except Exception as error:
+                    # Un error de autorización / dispositivo no debe romper ReyTV.
+                    if error.__class__.__name__ == "NativeError":
+                        self._send(400, {"error": str(error)[:160]})
+                    else:
+                        self._send(503, {"error": "Controles nativos temporalmente no disponibles."})
+                return
             if path == "/api/check":
                 cmd = ["git", "ls-remote", REPOSITORY, "refs/heads/" + BRANCH]
                 result = self._run(cmd, timeout=30)
@@ -114,6 +145,22 @@ class ReyTVHandler(BaseHTTPRequestHandler):
             self._send(503, {"error": "Herramientas de actualización no disponibles"})
         finally:
             self.server.action_lock.release()
+
+    def _body_length_allowed(self, path):
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            return False
+        return (0 <= length <= 2) if not path.startswith("/api/native/") else (2 <= length <= 2048)
+
+    def _native(self):
+        module_path = self.server.bin_dir / "reytv-native.py"
+        spec = importlib.util.spec_from_file_location("reytv_native", module_path)
+        if spec is None or spec.loader is None:
+            raise ImportError("Native module missing.")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
 
     def _run(self, cmd, timeout):
         env = os.environ.copy()
