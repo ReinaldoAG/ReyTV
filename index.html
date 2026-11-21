@@ -161,7 +161,7 @@
 
     <section id="hero" class="hero" aria-label="Presentación">
       <div class="hero-copy"><span class="eyebrow">Tu espacio de entretenimiento</span><h1>Tu pantalla.<br /><span>Tus reglas.</span></h1><p>Todo lo que te gusta, en un solo lugar. Elige un servicio con las flechas del teclado y presiona Enter para abrirlo.</p><button class="primary" id="watch" type="button">▶ &nbsp; Abrir YouTube</button></div>
-      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.4.0</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.4.1</div></div>
     </section>
 
     <section id="content" aria-live="polite">
@@ -242,7 +242,7 @@
         const panel=document.createElement('div');panel.id='settings';panel.className='settings-panel';
         panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>ReyTV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a ReyTV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
         const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);
-        const update=document.createElement('div');update.className='update-box';update.innerHTML='<h3>Actualizaciones de ReyTV</h3><p>Actualiza el menú sin pendrive, sin reinstalar Debian y sin perder favoritos.</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><p>Las actualizaciones de seguridad de Debian se gestionan por separado.</p>';panel.appendChild(update);
+        const update=document.createElement('div');update.className='update-box';update.innerHTML='<h3>Actualizaciones de ReyTV</h3><p>Actualiza la interfaz y los servicios propios de ReyTV sin pendrive ni reinstalar Debian. Conserva tus favoritos.</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><p>Las actualizaciones del sistema operativo y del firmware se gestionan por separado.</p><p id="update-bootstrap" class="update-message" hidden></p>';panel.appendChild(update);
         if(TV_MODE){const hint=document.createElement('p');hint.textContent='Modo TV: F8 vuelve al inicio desde cualquier servicio; F2 marca la aplicación seleccionada como favorita. Ctrl + Alt + M abre la terminal de mantenimiento; Ctrl + Alt + Esc abre el escritorio de mantenimiento.';panel.prepend(hint);}
         $('content').appendChild(panel);setupUpdates();setupNativeSettings(panel);return;
       }
@@ -391,6 +391,10 @@
         if(!response.ok)throw new Error('Actualizador no disponible');
         const data=await response.json();if(!data.ready||!data.token)throw new Error('Actualizador incompleto');
         token=data.token;check.disabled=false;undo.disabled=false;
+        if(!data.full_update){
+          $('update-bootstrap').hidden=false;
+          $('update-bootstrap').innerHTML='Para actualizar también los servicios de ReyTV, activa una sola vez el instalador desde el escritorio. <a href="https://github.com/ReinaldoAG/ReyTV/blob/main/Instalar-ReyTV.desktop" target="_blank" rel="noopener noreferrer">Descargar instalador gráfico</a>.';
+        }
         message.textContent=`Versión instalada: ${data.version||'desconocida'}. Puedes buscar actualizaciones.`;
       }catch{
         message.textContent='El actualizador integrado todavía no está instalado en este dispositivo. Se habilita una sola vez; después podrás actualizar desde aquí.';
@@ -407,8 +411,8 @@
         finally{if(document.body.contains(message)){check.disabled=false;undo.disabled=false;}}
       }
       check.addEventListener('click',()=>run(check,async()=>{
-        const data=await action('/api/check');apply.disabled=!data.available;
-        message.textContent=data.available?'¡Hay una actualización disponible! Pulsa «Actualizar ahora».':'ReyTV ya tiene la última versión publicada.';
+        const data=await action('/api/check');apply.disabled=!data.available || !data.full_update;
+        message.textContent=data.available?(data.full_update?'¡Hay una actualización disponible! Pulsa «Actualizar ahora».':'Actualización disponible. Primero activa el instalador gráfico para incluir los servicios.'):'ReyTV ya tiene la última versión publicada.';
       }));
       apply.addEventListener('click',()=>run(apply,async()=>{
         const data=await action('/api/update');message.textContent=data.message||'Actualización instalada. Recargando...';
