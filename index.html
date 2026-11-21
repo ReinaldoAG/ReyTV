@@ -142,6 +142,57 @@
     .native-modal .virtual-keyboard button { padding:10px 0; font:inherit; border:1px solid #849bc2; background:#2c4169; color:white; border-radius:8px; }
     .native-modal .virtual-keyboard button.wide { grid-column:span 2; }
     .native-modal input { font:inherit; width:100%; padding:12px; }
+
+    /* 0.4.3: interfaz de diez pies, un único menú de categorías. */
+    .settings-panel.tv-settings,.tv-mode .settings-panel.tv-settings{max-width:none;width:100%;display:grid;grid-template-columns:minmax(210px,26%) minmax(0,1fr);gap:clamp(16px,3vw,48px);padding:0;background:none;border:0;border-radius:0;align-items:start}
+    .tv-settings [hidden]{display:none!important}
+    .tv-settings .settings-rail{background:linear-gradient(150deg,#172544,#11192c);border:1px solid #41567d66;border-radius:20px;padding:clamp(12px,1.5vw,22px);min-height:470px}
+    .tv-settings .settings-kicker{font-size:clamp(10px,1vw,14px);font-weight:800;letter-spacing:2px;color:#9bb1db;margin:0 0 16px;line-height:1.4}
+    .settings-categories{display:grid;gap:8px}
+    .settings-category{border:1px solid transparent;border-radius:13px;background:transparent;color:#c8d6ed;display:grid;grid-template-columns:32px 1fr 12px;align-items:center;gap:12px;text-align:left;padding:clamp(10px,1.35vh,18px) 10px;min-height:66px;width:100%;font-size:clamp(14px,1.4vw,21px)}
+    .settings-category strong,.settings-category small{display:block;line-height:1.25}
+    .settings-category small{font-size:clamp(10px,.85vw,13px);color:#9cacc9;margin-top:5px;font-weight:500}
+    .settings-category-icon svg{width:27px;height:27px;display:block}
+    .settings-chevron{font-size:25px;opacity:.6}
+    .settings-category.active{background:linear-gradient(115deg,#285ab4,#353775);border-color:#719cfc88;color:#fff}
+    .settings-category.active small{color:#d2e0ff}
+    .settings-rail-footer{border-top:1px solid #52668a55;margin:24px 4px 0;padding-top:17px;font-weight:800;color:#d9e5ff}
+    .settings-rail-footer small{display:block;font-size:10px;color:#92a4c8;letter-spacing:1.4px;margin-top:5px}
+    .settings-stage{min-width:0;padding:5px 9px 18px 5px;max-height:calc(100vh - 165px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#4d648a transparent}
+    .settings-heading{display:flex;align-items:center;gap:clamp(14px,2vw,28px);margin:0 0 clamp(14px,2.5vh,30px)}
+    .settings-heading .settings-kicker{margin:0 0 4px}
+    .settings-heading h2{font-size:clamp(25px,3.2vw,48px);letter-spacing:-1.4px;line-height:1.12;margin:0 0 5px;color:white}
+    .tv-settings .settings-heading p:last-child{font-size:clamp(13px,1.35vw,20px);line-height:1.4;margin:0;color:#acbddb}
+    .settings-feature-icon{display:grid;place-items:center;flex-shrink:0;width:clamp(55px,7vw,100px);aspect-ratio:1;border-radius:20%;color:#e4edff;background:linear-gradient(145deg,#397bd7,#363b92);border:1px solid #8ab3ff77}
+    .settings-feature-icon svg{width:55%;height:55%}
+    .tv-settings .native-settings{border:0;background:none;padding:0;margin:0;position:relative}
+    .tv-settings .native-notice{font-size:clamp(12px,1.2vw,17px);color:#bad4ff;line-height:1.4;margin:0 0 12px;min-height:0}
+    .tv-settings .native-notice:empty{display:none}
+    .tv-settings .native-panel>p{font-size:clamp(13px,1.4vw,20px);margin:8px 0;color:#c0cde4;line-height:1.45}
+    .tv-settings .native-actions,.tv-settings .update-actions{gap:12px;margin:10px 0 20px}
+    .tv-settings .native-actions button,.tv-settings .update-actions button,.tv-settings #settings-help{background:#25395b;border:1px solid #5d79a5;border-radius:12px;padding:clamp(11px,1.5vh,17px) clamp(13px,1.6vw,24px);font-size:clamp(13px,1.35vw,20px);font-weight:750;color:#f5f8ff;min-height:48px}
+    .tv-settings .update-actions .primary{background:#b5d2ff;color:#102244;border-color:#d9e8ff}
+    .tv-settings .native-list{max-width:none;gap:9px}
+    .tv-settings .native-network{background:linear-gradient(115deg,#223454,#192945);border:1px solid #48628b99;border-radius:13px;min-height:58px;font-size:clamp(14px,1.5vw,22px);font-weight:700;padding:12px 18px}
+    .tv-settings .native-network small{font-size:clamp(11px,1.05vw,16px);font-weight:500;margin-top:4px}
+    .settings-list-title{font-size:clamp(15px,1.5vw,22px);margin:20px 0 12px;color:#d5e3fa}
+    .tv-settings #native-wifi-details{font-size:clamp(11px,1.1vw,16px);color:#94acce}
+    .tv-settings .native-volume{font-size:clamp(36px,6vw,76px)!important;line-height:1.2!important;color:#e0edff!important;font-weight:800;background:linear-gradient(115deg,#223a5e,#1a2744);border:1px solid #4c6e9c77;border-radius:20px;padding:24px;margin:12px 0 20px!important}
+    .tv-settings .update-box{background:linear-gradient(130deg,#253b7a,#24244a);border:1px solid #6d8be3aa;border-radius:20px;padding:clamp(16px,2.4vw,33px);margin:0}
+    .update-version{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:clamp(15px,1.6vw,23px);color:#c0d0f1;border-bottom:1px solid #8da4d844;padding-bottom:18px}
+    .update-version strong{color:white;font-size:clamp(26px,3.3vw,48px);font-variant-numeric:tabular-nums}
+    .tv-settings .update-message{font-size:clamp(14px,1.5vw,21px);color:#dce8ff;line-height:1.45;margin:20px 0}
+    .tv-settings .settings-footnote{font-size:clamp(11px,1.1vw,15px);line-height:1.4;margin-top:18px;color:#94acce}
+    .settings-keylist{display:grid;gap:8px;margin-bottom:20px}
+    .settings-keylist>div{display:flex;justify-content:space-between;gap:15px;padding:12px 16px;border-radius:10px;background:#1c2b46;font-size:clamp(12px,1.3vw,19px)}
+    .settings-keylist span{color:#b6c9e4;text-align:right}
+    .tv-settings button:focus-visible,.tv-settings button:focus{outline:3px solid #f3f7ff;outline-offset:2px;box-shadow:0 0 0 5px #729df755,0 0 20px #5a8cfa55;filter:brightness(1.13)}
+    .tv-mode:has(#settings) {background:radial-gradient(ellipse at 95% 0%,#193d7b55,transparent 50%),linear-gradient(135deg,#0d152a,#090e1c)}
+    .tv-mode:has(#settings) .section-title{margin:clamp(12px,2vh,22px) 0 20px}
+    .overlay:has(.native-modal) .dialog{width:min(92vw,760px);max-height:94vh;overflow:auto;padding:clamp(14px,2vw,28px);background:#162541;border-color:#678cc2}
+    .native-modal .virtual-keyboard button{min-height:40px;font-size:clamp(14px,1.5vw,21px)}
+    @media(max-height:650px){.tv-settings .settings-rail{min-height:0}.settings-category{min-height:48px;padding:8px}.settings-rail-footer{margin-top:12px;padding-top:10px}.settings-stage{max-height:calc(100vh - 130px)}}
+    @media(max-width:680px){.settings-panel.tv-settings,.tv-mode .settings-panel.tv-settings{grid-template-columns:1fr;gap:14px}.settings-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-rail-footer{display:none}.settings-stage{max-height:none;overflow:visible}}
   </style>
 </head>
 <body>
@@ -161,7 +212,7 @@
 
     <section id="hero" class="hero" aria-label="Presentación">
       <div class="hero-copy"><span class="eyebrow">Tu espacio de entretenimiento</span><h1>Tu pantalla.<br /><span>Tus reglas.</span></h1><p>Todo lo que te gusta, en un solo lugar. Elige un servicio con las flechas del teclado y presiona Enter para abrirlo.</p><button class="primary" id="watch" type="button">▶ &nbsp; Abrir YouTube</button></div>
-      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.4.2</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.4.3</div></div>
     </section>
 
     <section id="content" aria-live="polite">
@@ -183,6 +234,9 @@
     const TV_MODE = new URLSearchParams(location.search).get('tv') === '1';
     document.body.classList.toggle('tv-mode', TV_MODE);
     const STORAGE_KEY = 'reytv-v1';
+    let settingsCategory='wifi';
+    const settingsIcons={wifi:'<path d="M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="20" r="1"/>',bluetooth:'<path d="M12 2v20l7-6-14-9m7-5 7 6L5 17"/>',sound:'<path d="M3 9h4l5-5v16l-5-5H3zM16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>',updates:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7M4 20v-7h7"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3h.01"/>'};
+    const settingIcon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${settingsIcons[name]}</svg>`;
     const builtIn = [
       { id:'youtube', name:'YouTube', url:'https://www.youtube.com/', subtitle:'Videos, música y mucho más', c1:'#70231f',c2:'#200d16', glow:'#fb574e',badge:'VIDEOS' },
       { id:'netflix', name:'Netflix', url:'https://www.netflix.com/', subtitle:'Series y películas', c1:'#681b29',c2:'#160c17',glow:'#df254d',badge:'STREAMING' },
@@ -232,19 +286,39 @@
       const b=document.createElement('button'); b.type='button';b.className='utility-card';b.innerHTML='<span class="utility-icon">＋</span><span><strong>Añadir servicio</strong><small>Crea un acceso a otra página web</small></span>';b.addEventListener('click',()=>openModal('add'));return b;
     }
     function render(){
-      const sections={inicio:TV_MODE?['Tus aplicaciones','F8 · Inicio']:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','ReyTV']};
+      const sections={inicio:TV_MODE?['Tus aplicaciones','F8 · Inicio']:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Ajustes','ReyTV 0.4.3']};
       const [title,chip]=sections[page]; $('section-heading').textContent=title;$('section-chip').textContent=chip;
       $('hero').classList.toggle('hidden',page!=='inicio');$('searchrow').classList.toggle('hidden',page!=='aplicaciones');
       document.querySelectorAll('[data-page]').forEach(btn=>{if(btn.dataset.page===page)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});
       const grid=$('apps');grid.replaceChildren();grid.classList.toggle('hidden',page==='ajustes');
       $('settings')?.remove();
       if(page==='ajustes'){
-        const panel=document.createElement('div');panel.id='settings';panel.className='settings-panel';
-        panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>ReyTV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a ReyTV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
-        const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);
-        const update=document.createElement('div');update.className='update-box';update.innerHTML='<h3>Actualizaciones de ReyTV</h3><p>Actualiza la interfaz y los servicios propios de ReyTV sin pendrive ni reinstalar Debian. Conserva tus favoritos.</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><p>Las actualizaciones del sistema operativo y del firmware se gestionan por separado.</p><p id="update-bootstrap" class="update-message" hidden></p>';panel.appendChild(update);
-        if(TV_MODE){const hint=document.createElement('p');hint.textContent='Modo TV: F8 vuelve al inicio desde cualquier servicio; F2 marca la aplicación seleccionada como favorita. Ctrl + Alt + M abre la terminal de mantenimiento; Ctrl + Alt + Esc abre el escritorio de mantenimiento.';panel.prepend(hint);}
-        $('content').appendChild(panel);setupUpdates();setupNativeSettings(panel);return;
+        const panel=document.createElement('div');panel.id='settings';panel.className='settings-panel tv-settings';
+        const categories=[['wifi','Red e Internet','Wi-Fi y conexiones'],['bluetooth','Bluetooth','Dispositivos inalámbricos'],['sound','Sonido','Volumen del equipo'],['updates','Actualizaciones','Software de ReyTV'],['help','Ayuda y controles','Atajos y mantenimiento']];
+        panel.innerHTML='<aside class="settings-rail" aria-label="Categorías de ajustes"><p class="settings-kicker">DISPOSITIVO</p><div class="settings-categories"></div><div class="settings-rail-footer"><span>ReyTV</span><small>VERSIÓN 0.4.3</small></div></aside><div class="settings-stage"><div id="settings-native-slot"></div><section data-settings-pane="updates" class="settings-detail" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('updates')+'</div><div><p class="settings-kicker">SOFTWARE</p><h2>Actualizaciones</h2><p>Tu ReyTV, siempre al día.</p></div></div><div class="update-box"><div class="update-version"><span>Versión de ReyTV</span><strong id="settings-version">0.4.3</strong></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-bootstrap" class="update-message" hidden></p></div><p class="settings-footnote">Conserva favoritos y aplicaciones. Debian y el firmware se actualizan por separado.</p></section><section data-settings-pane="help" class="settings-detail" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('help')+'</div><div><p class="settings-kicker">ASISTENCIA</p><h2>Ayuda y controles</h2><p>Todo lo necesario para moverte por ReyTV.</p></div></div><div class="settings-keylist"><div><b>Flechas</b><span>Navegar</span></div><div><b>Enter</b><span>Seleccionar</span></div><div><b>Esc</b><span>Volver</span></div><div><b>F8</b><span>Inicio desde una aplicación</span></div><div><b>F2</b><span>Marcar favorito</span></div><div><b>Ctrl + Alt + Esc</b><span>Escritorio de mantenimiento</span></div><div><b>Ctrl + Alt + M</b><span>Terminal de mantenimiento</span></div></div><button type="button" class="secondary" id="settings-help">Ver ayuda del teclado</button></section></div>';
+        const rail=panel.querySelector('.settings-categories');
+        for(const [id,label,desc] of categories){
+          const item=document.createElement('button');item.type='button';item.className='settings-category';item.dataset.settingsCategory=id;
+          item.innerHTML='<span class="settings-category-icon">'+settingIcon(id)+'</span><span><strong>'+label+'</strong><small>'+desc+'</small></span><span class="settings-chevron" aria-hidden="true">›</span>';
+          rail.appendChild(item);item.addEventListener('click',()=>selectCategory(id,true));
+        }
+        $('content').appendChild(panel);
+        setupNativeSettings($('settings-native-slot'));
+        setupUpdates();
+        $('settings-help').onclick=()=>openModal('help');
+        function selectCategory(id,enter=false){
+          settingsCategory=id;
+          rail.querySelectorAll('button').forEach(button=>{const active=button.dataset.settingsCategory===id;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','true');else button.removeAttribute('aria-current');});
+          const isNative=['wifi','bluetooth','sound'].includes(id);
+          $('settings-native-slot').hidden=!isNative;
+          panel.querySelectorAll('[data-native-panel]').forEach(el=>{el.hidden=el.dataset.nativePanel!==id;});
+          panel.querySelectorAll('[data-settings-pane]').forEach(el=>{el.hidden=el.dataset.settingsPane!==id;});
+          const stage=panel.querySelector('.settings-stage');stage.scrollTop=0;
+          if(enter){const first=[...stage.querySelectorAll('button:not([disabled])')].find(el=>el.getClientRects().length);if(first){first.focus({preventScroll:true});first.scrollIntoView({block:'nearest'});}}
+        }
+        selectCategory(settingsCategory);
+        if(TV_MODE)rail.querySelector('.active')?.focus({preventScroll:true});
+        return;
       }
       const list=allApps().filter(a=>(page==='aplicaciones'||(TV_MODE&&page==='inicio')||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));
       if(list.length===0){const empty=document.createElement('p');empty.className='empty';empty.textContent=page==='favoritos'?'Todavía no tienes favoritos. Ve a Aplicaciones y marca alguna estrella.':'No hay resultados. Prueba con otra búsqueda.';grid.appendChild(empty);}
@@ -255,25 +329,19 @@
     function setupNativeSettings(panel){
       const root=document.createElement('section');
       root.id='native-settings';root.className='native-settings';
-      root.innerHTML='<h2>Configuración del dispositivo · 0.4.2</h2><p class="native-notice" id="native-notice">Leyendo dispositivos...</p>'+
-      '<div class="native-tabs"><button type="button" data-native-tab="wifi" class="active">Wi-Fi</button><button type="button" data-native-tab="bluetooth">Bluetooth</button><button type="button" data-native-tab="sound">Sonido</button></div>'+
-      '<section class="native-panel" data-native-panel="wifi"><h3>Red e Internet</h3><div class="native-actions"><button type="button" id="native-wifi-toggle">Wi-Fi</button><button type="button" id="native-wifi-scan">Buscar redes</button><button type="button" id="native-wifi-disconnect">Desconectar</button></div><p id="native-wifi-info"></p><p id="native-wifi-details"></p><div class="native-list" id="native-wifi-networks"></div></section>'+
-      '<section class="native-panel" data-native-panel="bluetooth" hidden><h3>Dispositivos Bluetooth</h3><div class="native-actions"><button type="button" id="native-bt-toggle">Bluetooth</button><button type="button" id="native-bt-scan">Buscar dispositivos</button></div><p id="native-bt-info"></p><div class="native-list" id="native-bt-devices"></div><p>El emparejamiento sin PIN funciona con dispositivos compatibles. Otros dispositivos requerirán una mejora posterior.</p></section>'+
-      '<section class="native-panel" data-native-panel="sound" hidden><h3>Sonido del televisor</h3><p class="native-volume" id="native-sound-info">Volumen: —</p><div class="native-actions"><button type="button" id="native-volume-down">− 10%</button><button type="button" id="native-volume-up">+ 10%</button><button type="button" id="native-mute">Silenciar</button></div></section>';
+      root.innerHTML='<p class="native-notice" id="native-notice" role="status">Leyendo dispositivos...</p>'+
+      '<section class="native-panel" data-native-panel="wifi"><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('wifi')+'</div><div><p class="settings-kicker">CONECTIVIDAD</p><h2>Red e Internet</h2><p>Conecta tu ReyTV a una red Wi-Fi.</p></div></div><div class="native-actions"><button type="button" id="native-wifi-toggle">Wi-Fi</button><button type="button" id="native-wifi-scan">Buscar redes</button><button type="button" id="native-wifi-disconnect">Desconectar</button></div><p id="native-wifi-info"></p><p id="native-wifi-details"></p><h3 class="settings-list-title">Redes disponibles</h3><div class="native-list" id="native-wifi-networks"></div></section>'+
+      '<section class="native-panel" data-native-panel="bluetooth" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('bluetooth')+'</div><div><p class="settings-kicker">DISPOSITIVOS</p><h2>Bluetooth</h2><p>Busca y conecta accesorios inalámbricos.</p></div></div><div class="native-actions"><button type="button" id="native-bt-toggle">Bluetooth</button><button type="button" id="native-bt-scan">Buscar dispositivos</button></div><p id="native-bt-info"></p><h3 class="settings-list-title">Dispositivos encontrados</h3><div class="native-list" id="native-bt-devices"></div><p>El emparejamiento sin PIN funciona con dispositivos compatibles. Otros dispositivos requerirán una mejora posterior.</p></section>'+
+      '<section class="native-panel" data-native-panel="sound" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('sound')+'</div><div><p class="settings-kicker">AUDIO</p><h2>Sonido</h2><p>Ajusta el volumen del equipo.</p></div></div><p class="native-volume" id="native-sound-info">Volumen: —</p><div class="native-actions"><button type="button" id="native-volume-down">− 10%</button><button type="button" id="native-volume-up">+ 10%</button><button type="button" id="native-mute">Silenciar</button></div></section>';
       panel.prepend(root);
-      let token='',data=null,active='wifi',busy=false;
+      let token='',data=null,busy=false;
       root.querySelectorAll('.native-actions button').forEach(button=>button.disabled=true);
       const local=id=>root.querySelector('#'+id);
       const note=message=>{local('native-notice').textContent=message;};
-      root.querySelectorAll('[data-native-tab]').forEach(button=>button.addEventListener('click',()=>{
-        active=button.dataset.nativeTab;
-        root.querySelectorAll('[data-native-tab]').forEach(el=>el.classList.toggle('active',el===button));
-        root.querySelectorAll('[data-native-panel]').forEach(el=>{el.hidden=el.dataset.nativePanel!==active;});
-      }));
       function control(id,enabled){local(id).disabled=!enabled;}
       function text(id,value){local(id).textContent=value;}
       function createRow(parent,title,description,label,handler){
-        const button=document.createElement('button');button.className='native-network';button.type='button';
+        const button=document.createElement('button');button.className='native-network';button.type='button';button.dataset.rowName=title;
         const left=document.createElement('span');left.textContent=title;
         const small=document.createElement('small');small.textContent=description;left.appendChild(small);
         const right=document.createElement('span');right.textContent=label;button.append(left,right);
@@ -288,6 +356,7 @@
         text('native-wifi-toggle',wifi.enabled?'Desactivar Wi-Fi':'Activar Wi-Fi');
         text('native-wifi-info',wifi.error||(!wifi.enabled?'Wi-Fi apagado':'Red actual: '+(wifi.connected||'Sin conexión')));
         text('native-wifi-details',[wifi.interface?'Adaptador: '+wifi.interface:'',wifi.ipv4?'IP local: '+wifi.ipv4:''].filter(Boolean).join(' · '));
+        const activeRow=document.activeElement?.closest('.native-network');const previousName=activeRow?.dataset.rowName;const previousList=activeRow?.parentElement?.id;
         const nets=local('native-wifi-networks');nets.replaceChildren();
         for(const net of wifi.networks||[]){
           const desc=(net.active?'Conectada · ':'')+'Señal '+net.signal+'% · '+(net.security==='--'?'Abierta':net.security);
@@ -314,6 +383,7 @@
         control('native-mute',sound.available);
         text('native-sound-info',sound.available?'Volumen: '+sound.percent+'%'+(sound.muted?' · Silenciado':''):(sound.error||'Audio no disponible'));
         text('native-mute',sound.muted?'Activar sonido':'Silenciar');
+        if(previousName&&previousList){const list=local(previousList);const match=[...(list?.children||[])].find(row=>row.dataset.rowName===previousName);if(match&&match.getClientRects().length)match.focus({preventScroll:true});else if(list?.getClientRects().length)local(previousList==='native-wifi-networks'?'native-wifi-scan':'native-bt-scan').focus();}
       }
       async function readState(){
         const response=await fetch('/api/native/status',{cache:'no-store'});
@@ -380,13 +450,13 @@
         try{
           const auth=await fetch('/api/status',{cache:'no-store'}).then(r=>r.json());
           token=auth.token||'';await readState();
-          note('Configuración lista. Selecciona una categoría y usa las flechas para navegar.');
+          note('');
         }catch(error){note('Controles nativos todavía no activados: '+(error.message||'servicio no disponible'));}
       })();
     }
 
     async function setupUpdates(){
-      const message=$('update-message');let token='',fullUpdate=false;
+      const message=$('update-message');const versionLabel=$('settings-version');let token='',fullUpdate=false;
       const check=$('check-update'),apply=$('apply-update'),undo=$('undo-update');
       try{
         const response=await fetch('/api/status',{cache:'no-store'});
@@ -397,7 +467,8 @@
           $('update-bootstrap').hidden=false;
           $('update-bootstrap').innerHTML='Para actualizar también los servicios de ReyTV, activa una sola vez el instalador desde el escritorio. <a href="https://github.com/ReinaldoAG/ReyTV/blob/main/Instalar-ReyTV.desktop" target="_blank" rel="noopener noreferrer">Descargar instalador gráfico</a>.';
         }
-        message.textContent=`Versión instalada: ${data.version||'desconocida'}. Puedes buscar actualizaciones.`;
+        if(versionLabel)versionLabel.textContent=data.version||'Desconocida';
+        message.textContent='Busca actualizaciones para comprobar si hay una versión nueva.';
       }catch{
         message.textContent='El actualizador integrado todavía no está instalado en este dispositivo. Se habilita una sola vez; después podrás actualizar desde aquí.';
         return;
@@ -460,6 +531,13 @@
     function closeModal(){$('modal').classList.add('hidden');$('modal').removeEventListener('click',overlayClick);modalType='';$('modal-content').replaceChildren();if(focusBeforeModal?.isConnected)focusBeforeModal.focus();}
     function isTextEntry(el){return !!el && (el.matches?.('input,textarea,select')||el.isContentEditable);}
     function moveFocus(direction){
+      const focused=document.activeElement;
+      if(page==='ajustes'&&focused?.matches('.settings-category')){
+        if(direction==='ArrowRight'){focused.click();return;}
+        const rail=[...document.querySelectorAll('.settings-category')],index=rail.indexOf(focused);
+        if(direction==='ArrowDown'&&index<rail.length-1){rail[index+1].focus();return;}
+        if(direction==='ArrowUp'&&index>0){rail[index-1].focus();return;}
+      }
       const nodes=[...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled])')].filter(node=>node.getClientRects().length>0 && !node.closest('.hidden') && !(TV_MODE&&node.classList.contains('fav-btn')));
       if(nodes.length===0)return;
       const active=document.activeElement; const source=nodes.includes(active)?active:nodes[0];
@@ -477,10 +555,11 @@
       if(event.key==='Escape'){
         if(modalType){event.preventDefault();closeModal();return;}
         if(inputMode){document.activeElement.blur();return;}
+        if(page==='ajustes'&&document.activeElement?.closest('.settings-stage')){event.preventDefault();document.querySelector('.settings-category.active')?.focus();return;}
         if(page!=='inicio'){event.preventDefault();goPage('inicio');}return;
       }
       if(event.key==='/'&&!inputMode&&!modalType){event.preventDefault();goPage('aplicaciones');$('search').focus();return;}
-      if(event.key==='Backspace'&&!inputMode&&!modalType&&page!=='inicio'){event.preventDefault();goPage('inicio');return;}
+      if(event.key==='Backspace'&&!inputMode&&!modalType&&page!=='inicio'){event.preventDefault();if(page==='ajustes'&&document.activeElement?.closest('.settings-stage'))document.querySelector('.settings-category.active')?.focus();else goPage('inicio');return;}
       if(event.key.startsWith('Arrow')&&!inputMode){event.preventDefault();if(modalType){const modalNodes=[...$('modal').querySelectorAll('button,input')];const pos=modalNodes.indexOf(document.activeElement);const step=(event.key==='ArrowRight'||event.key==='ArrowDown')?1:-1;modalNodes[(pos+step+modalNodes.length)%modalNodes.length]?.focus();}else moveFocus(event.key);}
     });
     render();
