@@ -7,6 +7,10 @@ on:
       - 'linux/reytv-server.py'
       - 'linux/reytv-native.py'
       - 'linux/reytv-install-tv.sh'
+      - 'linux/reytv-update'
+      - 'linux/reytv-rollback'
+      - 'linux/reytv-gui-setup.sh'
+      - 'Instalar-ReyTV.desktop'
       - 'linux/reytv-enable-updates.sh'
       - 'index.html'
       - 'tests/test_*.py'
@@ -21,9 +25,11 @@ jobs:
       - name: Comprobar sintaxis Python y scripts
         run: |
           python3 -m py_compile linux/reytv-server.py linux/reytv-native.py
-          bash -n linux/reytv-install-tv.sh linux/reytv-enable-updates.sh
+          bash -n linux/reytv-install-tv.sh linux/reytv-enable-updates.sh linux/reytv-update linux/reytv-rollback linux/reytv-gui-setup.sh
       - name: Pruebas de seguridad y parámetros
         run: python3 -m unittest discover -s tests -p 'test_native_settings.py' -v
+      - name: Prueba de actualización completa y recuperación
+        run: python3 -m unittest discover -s tests -p 'test_full_updater.py' -v
       - name: Validar JavaScript del menú
         run: |
           python3 - <<'PY'
