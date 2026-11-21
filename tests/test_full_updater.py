@@ -68,7 +68,7 @@ class FullUpdateTest(unittest.TestCase):
             update = subprocess.run(["bash", str(ROOT / "linux/reytv-update"), "--force"],
                                     env=env, text=True, capture_output=True, timeout=25)
             self.assertEqual(update.returncode, 0, update.stderr + update.stdout)
-            self.assertIn("0.4.6", (app / "index.html").read_text())
+            self.assertIn("0.4.7", (app / "index.html").read_text())
             self.assertIn("restart_requested", (bindir / "reytv-server.py").read_text())
             self.assertEqual((state / "previous-bundle/index.html").read_text(), oldhtml)
             self.assertFalse((home / ".config/reytv/chrome-profile").exists())

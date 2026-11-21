@@ -160,3 +160,7 @@ El botón Atrás de la esquina superior derecha cierra primero el teclado o diá
 ## ReyTV 0.4.6 – Teclado en servicios externos
 
 La barra X11 incluye Teclado, junto a Atrás e Inicio. Abre un teclado de usuario que escribe por XTest en la ventana de Chrome/Chromium activa sin cambiar el foco, leer los campos, almacenar texto ni usar el portapapeles. Intro / Ir envía Enter y cierra; Cerrar no envía nada. Incluye QWERTY, mayúsculas, números, símbolos y ñ según el mapa XKB instalado. La detección automática de campos editables usa opcionalmente AT-SPI 2/GObject y activa la accesibilidad de la sesión. Depende de que Chromium exponga sus eventos y de que el equipo tenga las bibliotecas correspondientes; si no están disponibles, Teclado siempre ofrece apertura manual. No hay permisos nuevos de root ni JavaScript inyectado en páginas externas. Se actualiza desde Ajustes.
+
+## ReyTV 0.4.7 – Sin notificaciones web
+
+Al iniciar el backend de la sesión TV, antes de Chromium, se bloquean las notificaciones de sitios únicamente en el perfil dedicado de ReyTV. Se eliminan las excepciones anteriores de notificaciones; no se alteran otros permisos, cookies, favoritos ni sesiones. Si el perfil está en uso, no se escribe: después de actualizar, apaga completamente y enciende el Chromebox una vez. Los mensajes internos de ReyTV permanecen disponibles. La versión futura del instalador de sesión también inicia Chromium con el bloqueo explícito.

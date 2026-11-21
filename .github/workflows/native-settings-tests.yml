@@ -2,7 +2,7 @@ name: Validar ajustes nativos ReyTV
 
 on:
   push:
-    branches: [main, feature/native-settings-0-4, feature/gui-installer-and-full-updater, feature/network-update-042, feature/tv-settings-043, feature/tv-experience-044, feature/back-navigation-045, feature/external-keyboard-046]
+    branches: [main, feature/native-settings-0-4, feature/gui-installer-and-full-updater, feature/network-update-042, feature/tv-settings-043, feature/tv-experience-044, feature/back-navigation-045, feature/external-keyboard-046, feature/quiet-tv-047]
     paths:
       - 'linux/reytv-server.py'
       - 'linux/reytv-native.py'
@@ -41,7 +41,7 @@ jobs:
           Path('/tmp/reytv-script.js').write_text(script.group(1))
           assert 'settings-categories' in html
           assert 'data-native-tab=' not in html
-          assert 'ReyTV · 0.4.6' in html
+          assert 'ReyTV · 0.4.7' in html
           PY
           node --check /tmp/reytv-script.js
       - name: Navegación en TV con Chromium
@@ -49,6 +49,7 @@ jobs:
           python3 -m pip install playwright
           python3 -m playwright install chromium
           python3 tests/test_tv_settings_browser.py
+          python3 tests/test_quiet_profile.py
       - name: Navegación de mouse sobre aplicaciones externas X11
         run: |
           sudo apt-get update -qq

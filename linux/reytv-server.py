@@ -541,6 +541,92 @@ def mouse_overlay():
         x.XFreeGC(d,gc);x.XDestroyWindow(d,win);x.XCloseDisplay(d)
 
 
+
+def quiet_tv_profile(profile_root):
+    """Bloquea notificaciones web solo en el perfil TV, antes de abrir Chromium.
+
+    No escribe preferencias mientras el navegador esté activo. No modifica
+    cookies, sesiones, credenciales, permisos DRM ni otros perfiles de escritorio.
+    """
+    import socket
+    import tempfile
+
+    root = Path(profile_root)
+    if root.is_symlink():
+        return False
+    try:
+        lock = root / "SingletonLock"
+        if lock.is_symlink():
+            host, sep, pid = os.readlink(lock).rpartition("-")
+            # Si no podemos verificar que el propietario del lock murió, no tocar.
+            if not sep or host != socket.gethostname() or not pid.isdigit():
+                return False
+            try:
+                os.kill(int(pid), 0)
+            except ProcessLookupError:
+                pass
+            except (PermissionError, OSError, ValueError, OverflowError):
+                return False
+            else:
+                return False
+        elif lock.exists():
+            return False
+        # También cubrir el instante de arranque anterior a crear SingletonLock.
+        argument = os.fsencode("--user-data-dir=" + str(root))
+        for proc in Path("/proc").iterdir():
+            if not proc.name.isdigit():
+                continue
+            try:
+                if proc.stat().st_uid != os.getuid():
+                    continue
+                args = (proc / "cmdline").read_bytes().split(b"\0")
+                if argument in args:
+                    return False
+            except FileNotFoundError:
+                continue
+            except (PermissionError, ProcessLookupError):
+                continue
+
+        root.mkdir(mode=0o700, parents=True, exist_ok=True)
+        profiles = [root / "Default"]
+        profiles += sorted(p for p in root.glob("Profile *") if p.is_dir())
+        for profile in profiles:
+            if profile.is_symlink():
+                continue
+            profile.mkdir(mode=0o700, exist_ok=True)
+            path = profile / "Preferences"
+            if path.is_symlink():
+                continue
+            try:
+                prefs = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+                settings = prefs.setdefault("profile", {})
+                defaults = settings.setdefault("default_content_setting_values", {})
+                exceptions = settings.setdefault("content_settings", {}).setdefault("exceptions", {})
+                if defaults.get("notifications") == 2 and not exceptions.get("notifications"):
+                    continue
+                defaults["notifications"] = 2
+                # Las autorizaciones de sitios anteriores no deben saltarse el bloqueo.
+                exceptions.pop("notifications", None)
+            except (ValueError, AttributeError, TypeError, OSError):
+                # No reemplazar nunca un archivo corrupto o inesperado.
+                continue
+            temp = None
+            try:
+                with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=profile,
+                                                 prefix=".reytv-prefs-", delete=False) as out:
+                    temp = Path(out.name)
+                    json.dump(prefs, out, ensure_ascii=False, separators=(",", ":"))
+                    out.flush()
+                    os.fsync(out.fileno())
+                os.replace(temp, path)
+            finally:
+                if temp is not None:
+                    temp.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mouse-overlay", action="store_true", help=argparse.SUPPRESS)
@@ -554,6 +640,11 @@ def main():
     if args.mouse_overlay:
         mouse_overlay()
         return
+    if os.environ.get("REYTV_TV_PID", "").isdigit():
+        config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+        # La sesión espera el HTTP antes de abrir el navegador. En una actualización
+        # en caliente el SingletonLock evita tocar el perfil hasta el próximo arranque.
+        quiet_tv_profile(config / "reytv/chrome-profile")
     server = ReyTVServer(("127.0.0.1", args.port), args.app_dir, args.bin_dir, args.state_dir)
     overlay = None
     if os.environ.get("REYTV_TV_PID", "").isdigit() and os.environ.get("DISPLAY"):

@@ -90,7 +90,7 @@ while [ "$want_desktop" = 0 ] && kill -0 "$wm" 2>/dev/null; do
   fi
   started=$(date +%s)
   # Conserva el perfil existente; no desactiva el sandbox ni TLS.
-  setsid "$browser" --user-data-dir="$PROFILE" --kiosk --no-first-run --no-default-browser-check --disable-session-crashed-bubble --disable-features=Translate --lang=es --ozone-platform=x11 "${browser_options[@]}" "$URL" &
+  setsid "$browser" --user-data-dir="$PROFILE" --kiosk --no-first-run --no-default-browser-check --disable-session-crashed-bubble --disable-notifications --disable-features=Translate --lang=es --ozone-platform=x11 "${browser_options[@]}" "$URL" &
   child=$!
   wait "$child" || true
   # wait puede interrumpirse por USR1. Esperar la salida y limpiar el grupo.
