@@ -7,6 +7,8 @@ import shutil
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
+from subprocess import CompletedProcess
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("reytv_server", ROOT / "linux" / "reytv-server.py")
@@ -61,6 +63,15 @@ class HTTPTests(unittest.TestCase):
                                    {"operation": "shell", "params": {}}, headers=headers)
         self.assertEqual(status, 400)
         self.assertIn("no permitida", obj["error"])
+
+    def test_update_check_reports_full_update(self):
+        _, status = self.request("GET", "/api/status")
+        headers = {"Origin": f"http://127.0.0.1:{self.port}", "X-ReyTV-Token": status["token"]}
+        with patch.object(mod.ReyTVHandler, "_run", return_value=CompletedProcess([], 0, "a"*40+"\trefs/heads/main\n", "")):
+            code, info = self.request("POST", "/api/check", {}, headers=headers)
+        self.assertEqual(code, 200)
+        self.assertTrue(info["available"])
+        self.assertTrue(info["full_update"])
 
     def test_native_status_read_only(self):
         status, obj = self.request("GET", "/api/native/status")

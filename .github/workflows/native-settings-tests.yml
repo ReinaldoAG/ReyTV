@@ -2,7 +2,7 @@ name: Validar ajustes nativos ReyTV
 
 on:
   push:
-    branches: [main, feature/native-settings-0-4, feature/gui-installer-and-full-updater]
+    branches: [main, feature/native-settings-0-4, feature/gui-installer-and-full-updater, feature/network-update-042]
     paths:
       - 'linux/reytv-server.py'
       - 'linux/reytv-native.py'
@@ -27,7 +27,7 @@ jobs:
           python3 -m py_compile linux/reytv-server.py linux/reytv-native.py
           bash -n linux/reytv-install-tv.sh linux/reytv-enable-updates.sh linux/reytv-update linux/reytv-rollback linux/reytv-gui-setup.sh
       - name: Pruebas de seguridad y parámetros
-        run: python3 -m unittest discover -s tests -p 'test_native_settings.py' -v
+        run: python3 -m unittest discover -s tests -p 'test_native*.py' -v
       - name: Prueba de actualización completa y recuperación
         run: python3 -m unittest discover -s tests -p 'test_full_updater.py' -v
       - name: Validar JavaScript del menú

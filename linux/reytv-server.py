@@ -128,7 +128,7 @@ class ReyTVHandler(BaseHTTPRequestHandler):
                     self._send(502, {"error": "Respuesta inesperada de GitHub"})
                     return
                 self._send(200, {"available": remote != self._current_sha(), "revision": remote,
-                                 "installed": self._current_sha()})
+                                 "installed": self._current_sha(), "full_update": True})
                 return
             name = "reytv-update" if path == "/api/update" else "reytv-rollback"
             executable = self.server.bin_dir / name

@@ -19,11 +19,15 @@ class NativeTests(unittest.TestCase):
             if "radio" in cmd:
                 return "enabled\n"
             if "status" in cmd:
-                return "wlp2s0:wifi:connected:MiCasa\n"
+                return "wlp2s0:wifi:connected:MiCasa perfil\n"
+            if "IP4.ADDRESS" in cmd:
+                return "192.168.1.15/24\n"
             return "*:MiCasa:87:WPA2\n :Invitados:50:--\n"
         with patch.object(mod, "_run", side_effect=fake):
             s = mod.wifi_status()
             self.assertEqual(s["connected"], "MiCasa")
+            self.assertEqual(s["interface"], "wlp2s0")
+            self.assertEqual(s["ipv4"], "192.168.1.15")
             self.assertEqual(s["networks"][0]["name"], "MiCasa")
 
     def test_no_arbitrary_command_or_field(self):

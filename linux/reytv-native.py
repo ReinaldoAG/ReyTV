@@ -5,6 +5,7 @@ NetworkManager y BlueZ deciden los permisos de la sesión local (polkit).
 Nunca se devuelven contraseñas ni se guardan en logs.
 """
 import os
+import ipaddress
 import re
 import shutil
 import subprocess
@@ -86,9 +87,22 @@ def wifi_status(scan=False):
                 networks.append({"name": cols[1], "signal": strength,
                                  "security": cols[3], "active": cols[0] == "*"})
             networks.sort(key=lambda n: (not n["active"], -n["signal"]))
+        ip = ""
+        if state.startswith("connected"):
+            try:
+                addresses = _run(["nmcli", "-g", "IP4.ADDRESS", "device", "show", dev], 5)
+                for line in addresses.splitlines():
+                    try:
+                        ip = str(ipaddress.IPv4Interface(line.strip()).ip)
+                        break
+                    except ValueError:
+                        continue
+            except NativeError:
+                pass
+        active_ssid = next((net["name"] for net in networks if net["active"]), "")
         return {"available": True, "enabled": radio == "enabled",
-                "connected": connected if state.startswith("connected") else "",
-                "networks": networks[:30]}
+                "connected": (active_ssid or connected) if state.startswith("connected") else "",
+                "interface": dev, "ipv4": ip, "networks": networks[:30]}
     except NativeError as exc:
         return {"available": False, "error": str(exc), "networks": []}
 
