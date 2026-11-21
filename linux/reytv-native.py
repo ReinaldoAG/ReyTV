@@ -4,6 +4,7 @@
 NetworkManager y BlueZ deciden los permisos de la sesión local (polkit).
 Nunca se devuelven contraseñas ni se guardan en logs.
 """
+import os
 import re
 import shutil
 import subprocess
@@ -18,10 +19,13 @@ class NativeError(Exception):
 def _run(command, timeout=12):
     if not shutil.which(command[0]):
         raise NativeError(f"No está instalada la herramienta {command[0]}.")
+    # Conservar XDG_RUNTIME_DIR y DBUS_SESSION_BUS_ADDRESS para PipeWire/BlueZ/NM.
+    env = os.environ.copy()
+    env.update({"LC_ALL": "C", "LANG": "C", "PATH": "/usr/sbin:/usr/bin:/sbin:/bin"})
     try:
         result = subprocess.run(
             command, text=True, capture_output=True, timeout=timeout,
-            check=False, env={"LC_ALL": "C", "LANG": "C", "PATH": "/usr/sbin:/usr/bin:/sbin:/bin"},
+            check=False, env=env,
         )
     except subprocess.TimeoutExpired:
         raise NativeError("La operación tardó demasiado. Prueba nuevamente.") from None
