@@ -1,12 +1,18 @@
-# REYTV 0.3 - ACTIVAR MODO TV REAL
-# Copia solo el comando de la línea siguiente, sin los comentarios.
-# Se ejecuta desde tu escritorio actual; pide tu contraseña sudo una vez.
-curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
+# REYTV 0.3 - DIAGNOSTICAR MODO TV
+# Si ves ERR_CONNECTION_REFUSED, prueba F8 una sola vez.
+# Para salir del modo TV: Ctrl+Alt+Esc y elegir LXQt en SDDM.
+# Alternativa: Ctrl+Alt+F3, iniciar sesión como reytv con tu contraseña.
+# No reiniciar antes de recoger el registro.
 
-# Cuando diga MODO TV INSTALADO, reinicia normalmente.
-# F8 vuelve a Inicio desde cualquier servicio. F2 marca favoritos.
-# Ctrl+Alt+Esc sale al selector SDDM. LXQt sigue disponible.
-# RESCATE (solo en caso de fallo): Ctrl+Alt+F3, usuario reytv y tu contraseña.
-# Ejecuta los dos comandos siguientes, uno a la vez:
+# DIAGNÓSTICO (no cambia nada):
+tail -40 ~/.local/state/reytv/tv-session.log
+ss -ltn
+pgrep -af reytv
+curl -s --max-time 3 -o /dev/null -w 'API HTTP: %{http_code}\n' http://127.0.0.1:18763/api/status
+
+# RESCATE (solo si quieres recuperar el escritorio anterior):
 sudo reytv-tv-disable
 sudo reboot
+
+# Instalador original del modo TV (no repetir hasta revisar el diagnóstico):
+# curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
