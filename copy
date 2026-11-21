@@ -1,24 +1,24 @@
-# REYTV - DIAGNÓSTICO Y REPARACIÓN DEL RELOJ
-# Ejecutar una línea por vez. No copiar los comentarios (#).
+# REYTV - REPARAR LA FECHA Y HORA
+# Ejecutar una línea de comando por vez. No copiar las líneas con #.
 
-# 1. DIAGNÓSTICO: fotografiar el resultado ANTES de cambiar la hora.
-timedatectl status; echo "=== RTC ==="; ls -l /dev/rtc*; cat /sys/class/rtc/rtc0/date /sys/class/rtc/rtc0/time; echo "=== NTP ==="; systemctl list-unit-files systemd-timesyncd.service chrony.service ntpsec.service; echo "=== MENU SERVIDO ==="; curl -fsS http://127.0.0.1:18763/index.html | grep -oc 'Actualizaciones de ReyTV'
+# PASO 1 - Ajustar el reloj de Debian y el reloj físico (RTC).
+# IMPORTANTE: cambia la fecha/hora del ejemplo por la de tu teléfono si hace falta.
+# Ejemplo: 21 de noviembre de 2026 a las 00:47 de Argentina.
+sudo timedatectl set-time "2026-11-21 00:47:00"
 
-# 2. CORRECCIÓN: usar la fecha y hora actuales del teléfono.
-# Ejemplo para el 21 de noviembre de 2026 a las 00:33 de Argentina.
-# EDITAR la fecha y hora si ya no coinciden.
-sudo timedatectl set-time "2026-11-21 00:33:00"
-
-# 3. Verificar que se hayan actualizado tanto el reloj del sistema como el RTC.
+# PASO 2 - Verificar ambos relojes ANTES de instalar nada.
 timedatectl status
 
-# 4. Instalar sincronización automática (solo después de corregir el reloj).
+# PASO 3 - Si la fecha es correcta, instalar el servicio oficial de hora automática.
 sudo apt-get update && sudo apt-get install systemd-timesyncd
 
-# 5. Activar el servicio y comprobar su estado.
+# PASO 4 - Activar la sincronización automática.
 sudo timedatectl set-ntp true
+
+# PASO 5 - Comprobar el resultado (repetir si aún está sincronizando).
 timedatectl status
 
-# Si APT propone eliminar paquetes importantes o presenta un error, no continuar.
-# En Chromium, Ctrl+Shift+R recarga el menú de ReyTV ignorando la caché.
+# Resultado esperado: NTP service: active; System clock synchronized: yes.
+# RTC time aparece en UTC (3 horas por delante de la hora argentina).
+# Si un comando da error o APT propone eliminar paquetes importantes, detenerse y enviar foto.
 # No desactivar la verificación SSL.
