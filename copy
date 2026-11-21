@@ -1,24 +1,24 @@
-# REYTV - REPARAR LA FECHA Y HORA
-# Ejecutar una línea de comando por vez. No copiar las líneas con #.
+# REYTV - REPARAR LOS REPOSITORIOS DE DEBIAN 13
+# Copia solo una línea de comando por vez. No copies comentarios (#).
+# La hora debe ser correcta antes de ejecutar APT.
 
-# PASO 1 - Ajustar el reloj de Debian y el reloj físico (RTC).
-# IMPORTANTE: cambia la fecha/hora del ejemplo por la de tu teléfono si hace falta.
-# Ejemplo: 21 de noviembre de 2026 a las 00:47 de Argentina.
-sudo timedatectl set-time "2026-11-21 00:47:00"
+# PASO 1 - Inspeccionar la configuración actual, sin cambiar nada.
+date; cat /etc/os-release; echo "=== FUENTES APT ==="; grep -HnE '^[[:space:]]*(deb[[:space:]]|Types:|URIs:|Suites:|Enabled:|Components:|Signed-By:)' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null; echo "=== PAQUETES ==="; apt-cache policy systemd-timesyncd; df -h /
 
-# PASO 2 - Verificar ambos relojes ANTES de instalar nada.
-timedatectl status
+# Si no aparecen fuentes activas de Internet, y VERSION_CODENAME=trixie,
+# puedes continuar al PASO 2. Si aparecen fuentes de Internet, envía foto antes.
+# PASO 2 - Añadir fuentes oficiales, conservando los archivos existentes.
+test ! -e /etc/apt/sources.list.d/reytv-debian.sources && printf '%s\n' 'Types: deb' 'URIs: https://deb.debian.org/debian' 'Suites: trixie trixie-updates' 'Components: main contrib non-free-firmware' 'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' '' 'Types: deb' 'URIs: https://security.debian.org/debian-security' 'Suites: trixie-security' 'Components: main contrib non-free-firmware' 'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' | sudo tee /etc/apt/sources.list.d/reytv-debian.sources
 
-# PASO 3 - Si la fecha es correcta, instalar el servicio oficial de hora automática.
-sudo apt-get update && sudo apt-get install systemd-timesyncd
+# PASO 3 - Descargar los índices de paquetes y comprobar que el servicio existe.
+sudo apt-get update --error-on=any && apt-cache policy systemd-timesyncd
 
-# PASO 4 - Activar la sincronización automática.
+# PASO 4 - Solo si hay candidato válido y no hay errores.
+sudo apt-get install systemd-timesyncd
+
+# PASO 5 - Activar sincronización automática y verificar.
 sudo timedatectl set-ntp true
-
-# PASO 5 - Comprobar el resultado (repetir si aún está sincronizando).
 timedatectl status
 
-# Resultado esperado: NTP service: active; System clock synchronized: yes.
-# RTC time aparece en UTC (3 horas por delante de la hora argentina).
-# Si un comando da error o APT propone eliminar paquetes importantes, detenerse y enviar foto.
-# No desactivar la verificación SSL.
+# Si APT propone eliminar paquetes importantes, o muestra un error, detenerse y enviar foto.
+# No realizar full-upgrade todavía ni desactivar TLS o las firmas de APT.
