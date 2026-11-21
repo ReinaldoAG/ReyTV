@@ -9,6 +9,16 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 class FullUpdateTest(unittest.TestCase):
+    def test_launcher_and_bootstrap_present(self):
+        desktop = (ROOT / "Instalar-ReyTV.desktop").read_text()
+        launcher = (ROOT / "linux/reytv-gui-setup.sh").read_text()
+        self.assertIn("Type=Application", desktop)
+        self.assertIn("Terminal=true", desktop)
+        self.assertIn("reytv-gui-setup.sh", desktop)
+        self.assertIn('linux/reytv-update', launcher)
+        self.assertNotIn("sudo ", launcher)
+        self.assertNotIn("sudo ", (ROOT / "linux/reytv-update").read_text())
+
     def test_install_rollback_user_space_only(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
