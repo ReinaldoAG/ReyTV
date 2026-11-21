@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import subprocess
 import sys
+import tempfile
 import time
 from playwright.sync_api import sync_playwright
 
@@ -28,7 +29,13 @@ def wait_until(page, condition, seconds=10):
     raise AssertionError("No se cumplió condición X11")
 
 def main():
-    wm = subprocess.Popen(["openbox"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    fixture = tempfile.TemporaryDirectory()
+    marker = Path(fixture.name) / "home-called"
+    config = Path(fixture.name) / "openbox.xml"
+    # La sesión real captura F8 en Openbox, no en el DOM de Chromium.
+    xml = (ROOT/"linux/openbox-tv.xml").read_text()
+    config.write_text(xml.replace("/usr/local/bin/reytv-tv-session --home", "touch "+str(marker)))
+    wm = subprocess.Popen(["openbox","--config-file",str(config)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     overlay = None
     try:
         time.sleep(.5)
@@ -54,7 +61,7 @@ def main():
             assert cmd("xdotool","getactivewindow")==active_before, "No tomar foco"
             window=wait_until(page,overlay_id)
             cmd("xdotool","mousemove","--window",window,"110","20","click","1")
-            page.wait_for_function("window.homePressed===true")
+            wait_until(page, marker.exists)
             window=wait_until(page,overlay_id)
             cmd("xdotool","mousemove","--window",window,"30","20","click","1")
             page.wait_for_url("**/index.html")
@@ -67,6 +74,7 @@ def main():
             overlay.wait(timeout=5)
         wm.terminate()
         wm.wait(timeout=5)
+        fixture.cleanup()
 
 if __name__=="__main__":
     main()
