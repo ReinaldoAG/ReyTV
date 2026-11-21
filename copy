@@ -1,12 +1,14 @@
-# REYTV 0.3.1 - ARRANQUE LIMPIO
-# Desde ReyTV 0.3, pulsa Ctrl+Alt+Esc para salir al selector de sesiones.
-# Elige LXQt e inicia sesión. Abre esta página en Chromium y QTerminal.
-# Copia SOLO la línea siguiente, sin los comentarios:
+# REYTV 0.3.2 - ARRANQUE LIMPIO Y SALIDA A LXQT
+# En la pantalla de inicio de sesión selecciona LXQt antes de iniciar sesión.
+# Desde el escritorio, copia SOLO el comando siguiente en QTerminal:
 curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
 
 # Debe decir MODO TV INSTALADO Y VERIFICADO.
-# Apaga por completo y vuelve a encender (no uses reboot por ahora).
-# Si aparece una solicitud de contraseña, toma una foto ANTES de escribirla.
-# F8: inicio; Ctrl+Alt+M: terminal de mantenimiento (nuevo); Ctrl+Alt+Esc: selector.
-# Diagnóstico opcional si todavía pide contraseña (no muestra contraseñas):
-sudo journalctl -b -u sddm --no-pager -n 35
+# Apaga completamente y enciende de nuevo.
+# Ctrl+Alt+Esc: abre el escritorio LXQt directamente (en 0.3.2).
+# Ctrl+Alt+M: abre terminal sin salir del modo TV.
+# F8: inicio.
+# Si pide contraseña al arrancar, fotografía el cuadro antes de introducirla.
+# Rescate desde Ctrl+Alt+F3 (solo en caso de fallo):
+# sudo reytv-tv-disable
+# sudo systemctl restart sddm

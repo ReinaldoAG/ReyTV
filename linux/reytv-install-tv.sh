@@ -4,7 +4,7 @@ set -euo pipefail
 [ "$(id -u)" != 0 ] || { echo 'Ejecuta como usuario normal, no con sudo.'; exit 1; }
 user=$(id -un)
 [[ "$user" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
-for cmd in git curl python3 openbox xset xsetroot setsid sudo; do
+for cmd in git curl python3 openbox startlxqt xset xsetroot setsid sudo; do
   command -v "$cmd" >/dev/null || { echo "Falta $cmd"; exit 1; }
 done
 [ -x /usr/bin/sddm ] && [ -f /usr/share/xsessions/lxqt.desktop ] || { echo 'No se encontró SDDM y la sesión LXQt de recuperación.'; exit 1; }
@@ -71,6 +71,17 @@ if ! cmp -s "$src/index.html" "$app/index.html"; then
   mv -f "$localhtml" "$app/index.html"
 fi
 printf '%s\n' "$revision" > "$state/current.sha"
+# El escritorio LXQt de mantenimiento no debe lanzar otra vez ReyTV.
+autostart="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
+mkdir -p "$autostart"
+python3 - "$autostart/reytv.desktop" "$state" <<'PY'
+import pathlib, sys
+p, state = map(pathlib.Path, sys.argv[1:])
+backup = state / "desktop-autostart.original"
+if p.exists() and not backup.exists():
+    backup.write_bytes(p.read_bytes())
+p.write_text("[Desktop Entry]\nType=Application\nName=ReyTV\nHidden=true\n")
+PY
 # Respaldo de la configuración original, sin modificar el resto del sistema.
 backup=/var/lib/reytv-tv
 sudo install -d -m 0700 "$backup"
@@ -95,5 +106,5 @@ grep -F -- '--disable-features=Translate' /usr/local/bin/reytv-tv-session >/dev/
 sync
 echo
 echo 'MODO TV INSTALADO Y VERIFICADO. Apaga completamente el Chromebox y vuelve a encenderlo.'
-echo 'F8: volver a Inicio. Ctrl+Alt+M: terminal (despues del arranque). Ctrl+Alt+Esc: selector de sesiones.'
+echo 'F8: volver a Inicio. Ctrl+Alt+M: terminal (despues del arranque). Ctrl+Alt+Esc: escritorio LXQt de mantenimiento.'
 echo 'Rescate: Ctrl+Alt+F3, iniciar sesión, sudo reytv-tv-disable, sudo reboot.'

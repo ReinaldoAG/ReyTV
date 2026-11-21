@@ -15,19 +15,19 @@ if [ "${1:-}" = "--home" ] 2>/dev/null; then
   exit
 fi
 if [ "${1:-}" = "--exit" ] 2>/dev/null; then
-  if [[ "$REYTV_TV_PID" =~ ^[0-9]+$ ]]; then kill -TERM "$REYTV_TV_PID"; fi
+  if [[ "$REYTV_TV_PID" =~ ^[0-9]+$ ]]; then kill -USR2 "$REYTV_TV_PID"; fi
   exit
 fi
 mkdir -p "$STATE" "$PROFILE"
 exec >>"$STATE/tv-session.log" 2>&1
-printf "\n=== Sesion TV 0.3.1: %s ===\n" "$(date -Is)"
+printf "\n=== Sesion TV 0.3.2: %s ===\n" "$(date -Is)"
 [ -s "$APP/index.html" ] && [ -s "$BIN/reytv-server.py" ] || { echo "Falta la instalación de ReyTV."; exit 1; }
 browser=''
 for name in google-chrome-stable google-chrome chromium chromium-browser; do
   if command -v "$name" >/dev/null; then browser=$(command -v "$name"); break; fi
 done
 [ -n "$browser" ] || exit 1
-export REYTV_TV_PID=$
+export REYTV_TV_PID=$$
 export XDG_CURRENT_DESKTOP=ReyTV
 export XDG_SESSION_DESKTOP=reytv-tv
 # Exponer el DISPLAY a los servicios de usuario, sin iniciar LXQt.
@@ -41,6 +41,7 @@ cursor=$!
 server=''
 child=''
 want_home=0
+want_desktop=0
 terminate_child() {
   if [ -n "$child" ]; then kill -TERM -- "-$child" 2>/dev/null || true; fi
 }
@@ -52,6 +53,7 @@ cleanup() {
 }
 trap cleanup EXIT
 trap 'want_home=1; terminate_child' USR1
+trap 'want_desktop=1; terminate_child' USR2
 trap 'exit 0' TERM INT HUP
 # Un único backend local; nunca exponerlo en la red.
 if ! curl -fsS --max-time 1 http://127.0.0.1:18763/api/status >/dev/null 2>&1; then
@@ -65,7 +67,7 @@ for i in $(seq 1 40); do
 done
 [ "$ready" = 1 ] || { echo 'Backend no disponible; regresando al acceso de sesión.'; exit 1; }
 failures=0
-while kill -0 "$wm" 2>/dev/null; do
+while [ "$want_desktop" = 0 ] && kill -0 "$wm" 2>/dev/null; do
   want_home=0
   if ! curl -fsS --max-time 2 http://127.0.0.1:18763/api/status >/dev/null 2>&1; then
     echo "Backend no disponible durante la sesion; intentando restaurar."
@@ -92,6 +94,7 @@ while kill -0 "$wm" 2>/dev/null; do
   kill -KILL -- "-$child" 2>/dev/null || true
   wait "$child" 2>/dev/null || true
   child=''
+  if [ "$want_desktop" = 1 ]; then break; fi
   now=$(date +%s)
   if [ "$want_home" = 0 ] && [ "$((now-started))" -lt 4 ]; then
     failures=$((failures+1))
@@ -101,3 +104,19 @@ while kill -0 "$wm" 2>/dev/null; do
   if [ "$failures" -ge 3 ]; then echo 'Navegador no inicia; regresar a SDDM.'; exit 1; fi
   sleep .3
 done
+
+# Cambiar a mantenimiento en la misma sesión X11, sin volver al greeter.
+if [ "$want_desktop" = 1 ]; then
+  echo 'Abriendo escritorio LXQt de mantenimiento.'
+  cleanup
+  for pid in "$server" "$cursor" "$wm"; do
+    if [ -n "$pid" ]; then wait "$pid" 2>/dev/null || true; fi
+  done
+  trap - EXIT USR1 USR2 TERM INT HUP
+  unset REYTV_TV_PID
+  export XDG_CURRENT_DESKTOP=LXQt
+  export XDG_SESSION_DESKTOP=lxqt
+  export DESKTOP_SESSION=lxqt
+  dbus-update-activation-environment --systemd DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP DESKTOP_SESSION 2>/dev/null || true
+  exec startlxqt
+fi

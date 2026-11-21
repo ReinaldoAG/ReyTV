@@ -120,3 +120,7 @@ La sesión es reversible: Ctrl+Alt+Esc muestra SDDM; puedes elegir LXQt. Si fall
 ### 0.3.1: arranque limpio
 
 El menú declara notranslate y la sesión inicia Chromium con Translate desactivado. Conserva el perfil y sus mecanismos de protección; no elimina ni desprotege el llavero. El instalador verifica SDDM, la entrada X11 y el lanzador antes de indicar éxito. Ctrl+Alt+M abre QTerminal como mantenimiento y Ctrl+Alt+Esc permite salir de la sesión. El lanzador escribe el registro desde antes de las comprobaciones y vuelve a comprobar el backend antes de iniciar el navegador. El aviso de contraseña reportado en el hardware todavía requiere identificar si viene de SDDM o del llavero. No se ha probado 0.3.1 en el CN60 físico.
+
+### 0.3.2: salida a mantenimiento
+
+Ctrl+Alt+Esc cambia al escritorio LXQt dentro de la misma sesión X11, cerrando primero el navegador kiosco y Openbox. No solicita iniciar sesión de nuevo. Se desactiva el acceso automático a ReyTV dentro del escritorio (el archivo original se conserva en el directorio de estado del usuario). Un apagado completo permite regresar al modo TV al encender. Ctrl+Alt+M sigue disponible para mantenimiento rápido. Esta transición aún requiere la prueba física.
