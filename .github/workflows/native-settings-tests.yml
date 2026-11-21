@@ -49,9 +49,9 @@ jobs:
           python3 -m pip install playwright
           python3 -m playwright install chromium
           python3 tests/test_tv_settings_browser.py
-          python3 tests/test_quiet_profile.py
       - name: Navegación de mouse sobre aplicaciones externas X11
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends openbox xdotool xvfb libxtst6
+          xvfb-run -a -s '-screen 0 1280x720x24' python3 tests/test_quiet_profile.py
           xvfb-run -a -s '-screen 0 1280x720x24' python3 tests/test_mouse_overlay.py

@@ -33,12 +33,14 @@ with tempfile.TemporaryDirectory() as tmp:
     assert prefs["profile"]["content_settings"]["exceptions"]["cookies"]==original["profile"]["content_settings"]["exceptions"]["cookies"]
     assert prefs["bookmark_bar"]==original["bookmark_bar"]
     with sync_playwright() as p:
-        ctx=p.chromium.launch_persistent_context(str(root),headless=True)
+        ctx=p.chromium.launch_persistent_context(str(root),headless=False)
         page=ctx.pages[0]
-        page.route("https://example.test/**",lambda route:route.fulfill(body="<html>Prueba</html>",content_type="text/html"))
+        page.route("https://example.test/**",lambda route:route.fulfill(body="<html><button onclick=\"Notification.requestPermission().then(v=>window.answer=v)\">Permiso</button></html>",content_type="text/html"))
         page.goto("https://example.test/")
         assert page.evaluate("Notification.permission")=="denied"
-        assert page.evaluate("Notification.requestPermission()")=="denied"
+        page.get_by_role("button",name="Permiso").click()
+        page.wait_for_function("window.answer !== undefined",timeout=5000)
+        assert page.evaluate("window.answer")=="denied",page.evaluate("window.answer")
         assert not server.quiet_tv_profile(root)
         ctx.close()
 print("Notificaciones bloqueadas en Chromium, perfil activo protegido, otros ajustes preservados.")
