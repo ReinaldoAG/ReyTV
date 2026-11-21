@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Instalar actualizaciones de ReyTV
+Comment=Instala ReyTV desde GitHub sin escribir comandos
+Exec=/usr/bin/bash -c "t=$(mktemp); curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-gui-setup.sh -o $t && bash $t; result=$?; rm -f $t; echo; echo Resultado_$result; echo Pulsa_Enter_para_cerrar; read -r v"
+Icon=system-software-update
+Terminal=true
+Categories=System;Utility;
+StartupNotify=true
