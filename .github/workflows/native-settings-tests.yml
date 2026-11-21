@@ -9,7 +9,7 @@ on:
       - 'linux/reytv-install-tv.sh'
       - 'linux/reytv-enable-updates.sh'
       - 'index.html'
-      - 'tests/test_native_settings.py'
+      - 'tests/test_*.py'
       - '.github/workflows/native-settings-tests.yml'
   workflow_dispatch:
 
