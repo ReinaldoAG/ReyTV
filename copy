@@ -1,14 +1,17 @@
-# REYTV 0.4.0 - AJUSTES NATIVOS EN EL TELEVISOR
-# 1) Desde ReyTV usa Ctrl + Alt + Esc para abrir LXQt de mantenimiento.
-# 2) Abre GitHub en Chromium y QTerminal.
-# 3) Copia SOLO la siguiente línea:
-curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
-
-# Debe decir MODO TV INSTALADO Y VERIFICADO.
-# 4) Apaga completamente el Chromebox y vuelve a encenderlo.
-# 5) En ReyTV abre Ajustes > Configuración del dispositivo.
-# Wi-Fi: ver redes, conectar/desconectar. Bluetooth: buscar y conectar dispositivos
-# compatibles sin PIN. Sonido: cambiar volumen/silenciar.
-# Algunas acciones dependen de los permisos de NetworkManager y BlueZ.
-# No se abre LXQt para usar estos controles. Solo para mantenimiento técnico.
-# Si falla algo, Ctrl + Alt + M abre terminal sin salir de ReyTV.
+# REYTV 0.4.1 - INSTALACIÓN SIN COPIAR COMANDOS
+#
+# 1. Dentro de ReyTV, Ctrl+Alt+Esc abre LXQt de mantenimiento.
+# 2. En Chromium abre:
+#    https://github.com/ReinaldoAG/ReyTV/blob/main/Instalar-ReyTV.desktop
+# 3. Haz clic en Download raw file (descargar archivo).
+# 4. En el administrador de archivos abre Descargas y el archivo Instalar-ReyTV.desktop.
+#    Si avisa "no confiable", revisa sus propiedades y autoriza su ejecución.
+#    Algunos entornos exigen marcarlo como Ejecutable en Propiedades > Permisos.
+# 5. Se abre una ventana con la instalación automática. No tienes que escribir comandos.
+#    Cuando indique "Listo", cierra la ventana y apaga/enciende el Chromebox.
+# 6. Desde entonces, ReyTV > Ajustes > Actualizaciones > Actualizar ahora
+#    actualiza también el servidor local y los controles nativos.
+#
+# Si no tienes permiso para lanzar .desktop desde Descargas, abre Propiedades >
+# Permisos y marca "Ejecutable". No hay que copiar código en la terminal.
+# El instalador no cambia el firmware, el kernel ni la contraseña del usuario.
