@@ -1,9 +1,24 @@
-# REYTV - DIAGNÓSTICO DESPUÉS DEL REINICIO
-# Copia únicamente la línea siguiente en la terminal, pulsa Enter y envía una foto.
-# No modifica nada. No necesita sudo.
+# REYTV - DIAGNÓSTICO Y REPARACIÓN DEL RELOJ
+# Ejecutar una línea por vez. No copiar los comentarios (#).
 
-date; echo "=== ARRANQUE ==="; findmnt -no SOURCE,FSTYPE /; cat /proc/cmdline; echo "=== USUARIO Y ARCHIVOS ==="; whoami; ls -l ~/.local/bin/reytv ~/.local/bin/reytv-server.py ~/.config/autostart/reytv.desktop ~/.local/share/reytv/index.html; grep -oc 'Actualizaciones de ReyTV' ~/.local/share/reytv/index.html; echo "=== SERVIDOR ==="; curl -s --max-time 3 -o /dev/null -w 'API HTTP: %{http_code}\n' http://127.0.0.1:18763/api/status
+# 1. DIAGNÓSTICO: fotografiar el resultado ANTES de cambiar la hora.
+timedatectl status; echo "=== RTC ==="; ls -l /dev/rtc*; cat /sys/class/rtc/rtc0/date /sys/class/rtc/rtc0/time; echo "=== NTP ==="; systemctl list-unit-files systemd-timesyncd.service chrony.service ntpsec.service; echo "=== MENU SERVIDO ==="; curl -fsS http://127.0.0.1:18763/index.html | grep -oc 'Actualizaciones de ReyTV'
 
-# No reinstales ni formatees nada hasta revisar el resultado.
-# Instalador original (solo si se indica repetirlo y la fecha es correcta):
-# curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh -o /tmp/reytv-setup.sh && bash /tmp/reytv-setup.sh
+# 2. CORRECCIÓN: usar la fecha y hora actuales del teléfono.
+# Ejemplo para el 21 de noviembre de 2026 a las 00:33 de Argentina.
+# EDITAR la fecha y hora si ya no coinciden.
+sudo timedatectl set-time "2026-11-21 00:33:00"
+
+# 3. Verificar que se hayan actualizado tanto el reloj del sistema como el RTC.
+timedatectl status
+
+# 4. Instalar sincronización automática (solo después de corregir el reloj).
+sudo apt-get update && sudo apt-get install systemd-timesyncd
+
+# 5. Activar el servicio y comprobar su estado.
+sudo timedatectl set-ntp true
+timedatectl status
+
+# Si APT propone eliminar paquetes importantes o presenta un error, no continuar.
+# En Chromium, Ctrl+Shift+R recarga el menú de ReyTV ignorando la caché.
+# No desactivar la verificación SSL.
