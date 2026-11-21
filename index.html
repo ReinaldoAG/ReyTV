@@ -143,7 +143,7 @@
     .native-modal .virtual-keyboard button.wide { grid-column:span 2; }
     .native-modal input { font:inherit; width:100%; padding:12px; }
 
-    /* 0.4.3: interfaz de diez pies, un único menú de categorías. */
+    /* 0.4.4: interfaz de diez pies, un único menú de categorías. */
     .settings-panel.tv-settings,.tv-mode .settings-panel.tv-settings{max-width:none;width:100%;display:grid;grid-template-columns:minmax(210px,26%) minmax(0,1fr);gap:clamp(16px,3vw,48px);padding:0;background:none;border:0;border-radius:0;align-items:start}
     .tv-settings [hidden]{display:none!important}
     .tv-settings .settings-rail{background:linear-gradient(150deg,#172544,#11192c);border:1px solid #41567d66;border-radius:20px;padding:clamp(12px,1.5vw,22px);min-height:470px}
@@ -193,6 +193,80 @@
     .native-modal .virtual-keyboard button{min-height:40px;font-size:clamp(14px,1.5vw,21px)}
     @media(max-height:650px){.tv-settings .settings-rail{min-height:0}.settings-category{min-height:48px;padding:8px}.settings-rail-footer{margin-top:12px;padding-top:10px}.settings-stage{max-height:calc(100vh - 130px)}}
     @media(max-width:680px){.settings-panel.tv-settings,.tv-mode .settings-panel.tv-settings{grid-template-columns:1fr;gap:14px}.settings-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-rail-footer{display:none}.settings-stage{max-height:none;overflow:visible}}
+
+    /* 0.4.4 · Pantallas de consola, sin documento desplazable en TV. */
+    body{background:radial-gradient(ellipse at 88% -15%,#254b8a 0,transparent 52%),radial-gradient(ellipse at 0% 100%,#29204c 0,transparent 44%),#080f20}
+    .brand-icon{background:linear-gradient(145deg,#e9f3ff,#8ab8ff 48%,#5261df);color:#101d46;box-shadow:0 5px 28px #7b95ff50}
+    .nav button[aria-current="page"]{background:linear-gradient(125deg,#315bc0,#383885);box-shadow:inset 0 0 0 1px #8aafff66,0 6px 22px #214b9d35}
+    .topbar{border-bottom:1px solid #95b7ff26;padding-bottom:14px}
+    .section-title h2{font-weight:850;letter-spacing:-1.2px}
+    .app-card{isolation:isolate;border:1px solid #ffffff28;box-shadow:0 8px 26px #0004;align-items:center;border-radius:18px;background:linear-gradient(125deg,var(--tile1),var(--tile2))}
+    .app-card::before{width:65%;height:130%;right:-15%;top:-65%;opacity:.68;filter:blur(20px)}
+    .app-card::after{opacity:.48;width:80px;height:80px;right:12%;top:8%;border-radius:26px;transform:rotate(34deg)}
+    .app-card:hover,.app-card:focus-visible{transform:translateY(-3px) scale(1.012);box-shadow:0 0 0 3px #e3efff,0 0 24px #83a9ff88;filter:brightness(1.13)}
+    .card-sub{font-size:clamp(11px,1.15vw,16px);color:#fffC}
+    .app-pager{display:flex;justify-content:center;align-items:center;gap:18px;padding:10px 0 4px;color:#bdcdef}
+    .app-pager button{padding:8px 18px}
+    .app-pager span{font-weight:750;letter-spacing:1px}
+    .searchrow{margin:8px 0 13px;gap:10px}
+    .searchrow .searchbox{max-width:560px}
+    .settings-stage,.native-list,.dialog,#content{scrollbar-width:none;scroll-behavior:auto}
+    .settings-stage::-webkit-scrollbar,.dialog::-webkit-scrollbar,#content::-webkit-scrollbar{display:none}
+    .settings-category{transition:background .14s,box-shadow .14s}
+    .settings-category.active{background:linear-gradient(115deg,#285cba,#4240a2)}
+    .settings-feature-icon{box-shadow:0 8px 25px #4077e43b}
+    .tv-settings .native-network:hover{background:#355384;border-color:#8eb3f4}
+    .tv-settings .native-actions button:hover,.tv-settings .update-actions button:hover{filter:brightness(1.2)}
+    @media(min-width:760px) and (min-height:480px){
+      html,body{height:100%;overflow:hidden}
+      .shell,.tv-mode .shell{height:100dvh;max-width:1800px;display:flex;flex-direction:column;padding:clamp(12px,2.5vh,30px) clamp(20px,4.2vw,76px) clamp(12px,2vh,24px);gap:0}
+      .topbar{flex:0 0 auto;min-height:44px}
+      .hero,.footer{display:none!important}
+      #content{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;padding:4px 6px 7px}
+      .section-title,.tv-mode .section-title,.tv-mode:has(#settings) .section-title{flex:0 0 auto;margin:clamp(12px,2.5vh,26px) 0 clamp(12px,2vh,22px)}
+      .section-title h2,.tv-mode .section-title h2{font-size:clamp(24px,3vw,46px)}
+      #apps.grid{flex:1;min-height:0;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(12px,1.7vw,24px);padding:6px}
+      .app-wrap{min-height:0}
+      .app-card,.utility-card,.tv-mode .app-card,.tv-mode .utility-card{height:100%;min-height:0;padding:clamp(12px,2vw,28px)}
+      .card-title,.tv-mode .card-title{font-size:clamp(20px,3vw,42px)}
+      .settings-panel.tv-settings,.tv-mode .settings-panel.tv-settings{flex:1;min-height:0;align-items:stretch;grid-template-columns:minmax(200px,25%) minmax(0,1fr);gap:clamp(14px,2.7vw,40px)}
+      .tv-settings .settings-rail{min-height:0;overflow:hidden;display:flex;flex-direction:column}
+      .settings-categories{flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
+      .settings-category{min-height:0;padding:clamp(7px,1.5vh,16px) 10px}
+      .settings-rail-footer{flex:0 0 auto;margin-top:14px;padding-top:10px}
+      .settings-stage{max-height:none;min-height:0;padding:5px 10px 15px;overflow-y:auto}
+      .tv-settings .settings-heading{margin-bottom:clamp(10px,2vh,22px)}
+      .tv-settings .settings-feature-icon{width:clamp(45px,8vh,86px)}
+      .tv-settings .native-actions,.tv-settings .update-actions{margin:8px 0 12px}
+      .tv-settings .native-network{min-height:52px;padding:8px 16px}
+      .settings-list-title{margin:12px 0 9px}
+      .tv-settings .settings-keylist{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .settings-keylist>div{flex-direction:column;gap:5px;padding:9px 12px}
+      .settings-keylist span{text-align:left}
+      .tv-settings .update-message{margin:14px 0}
+      @media(max-width:949px){#apps.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      @media(max-height:600px){.settings-category small{display:none}.settings-rail-footer{display:none}.topbar{padding-bottom:8px}.nav button{padding:8px 12px}.tv-settings .settings-kicker{margin-bottom:7px}.tv-settings .settings-heading .settings-kicker{margin:0}.settings-heading h2{font-size:26px}.tv-settings .native-panel>p{font-size:13px}.tv-settings .settings-heading p:last-child{font-size:13px}.tv-settings .native-network{min-height:44px}.tv-settings .native-actions button,.tv-settings .update-actions button{min-height:38px;padding:8px 12px}}
+    }
+    .pointer-pref{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#1c2b46;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:clamp(12px,1.3vw,19px)}
+    .pointer-pref small{display:block;color:#b6c9e4;margin-top:4px}
+    .keyboard-overlay{position:fixed;inset:0;z-index:150;background:#030813cc;display:flex;align-items:center;justify-content:center;padding:clamp(10px,2vh,24px)}
+    .keyboard-deck{width:min(92vw,960px);max-height:96dvh;overflow:auto;background:linear-gradient(150deg,#263c69,#101c37);border:1px solid #7199e5;border-radius:24px;padding:clamp(12px,2.4vh,25px);box-shadow:0 20px 75px #0009;display:grid;gap:clamp(7px,1.2vh,13px);scrollbar-width:none}
+    .keyboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .keyboard-overline{font-size:10px;color:#9fb9ec;letter-spacing:1.5px;font-weight:800}
+    .keyboard-head h2{font-size:clamp(20px,2.8vw,34px);margin:4px 0}
+    #keyboard-value{width:100%;background:#0b142a;color:white;border:1px solid #7399d7;border-radius:12px;padding:clamp(9px,1.5vh,15px);font-size:clamp(18px,2.4vw,28px)}
+    .keyboard-modes,.keyboard-bottom{display:flex;gap:8px}
+    .keyboard-modes [hidden]{display:none!important}
+    .keyboard-keys{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:clamp(5px,.8vw,10px)}
+    .keyboard-deck button{min-height:clamp(34px,6vh,56px);border:1px solid #6a86b8;border-radius:10px;background:#2b426a;color:white;font-weight:700;font-size:clamp(14px,1.7vw,23px);padding:5px 8px}
+    .keyboard-modes button{min-width:68px;font-size:clamp(12px,1.4vw,18px)}
+    .keyboard-modes button[aria-pressed="true"]{background:#4c71c6}
+    .keyboard-bottom button{flex:1}
+    .keyboard-bottom .primary{background:linear-gradient(125deg,#d2e7ff,#96adff);color:#102347}
+    .keyboard-deck button:hover,.keyboard-deck button:focus{background:#5279c2;outline:3px solid #edf5ff;outline-offset:1px;box-shadow:0 0 18px #90baff66}
+    .keyboard-deck .primary:focus{background:#d0e4ff;color:#102347}
+    @media(max-width:650px){.keyboard-keys{grid-template-columns:repeat(7,minmax(0,1fr))}.keyboard-deck{width:100%;border-radius:15px}.searchrow{flex-wrap:wrap}.searchrow input{flex-basis:100%}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
 <body>
@@ -212,13 +286,13 @@
 
     <section id="hero" class="hero" aria-label="Presentación">
       <div class="hero-copy"><span class="eyebrow">Tu espacio de entretenimiento</span><h1>Tu pantalla.<br /><span>Tus reglas.</span></h1><p>Todo lo que te gusta, en un solo lugar. Elige un servicio con las flechas del teclado y presiona Enter para abrirlo.</p><button class="primary" id="watch" type="button">▶ &nbsp; Abrir YouTube</button></div>
-      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.4.3</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.4.4</div></div>
     </section>
 
     <section id="content" aria-live="polite">
       <div class="section-title"><h2 id="section-heading">Para ver hoy</h2><span class="chip" id="section-chip">Tus accesos favoritos</span></div>
-      <div id="searchrow" class="searchrow hidden"><input id="search" class="searchbox" type="search" placeholder="Buscar una aplicación…" aria-label="Buscar aplicación" autocomplete="off" /><span class="chip">Presiona / para buscar</span></div>
-      <div id="apps" class="grid"></div>
+      <div id="searchrow" class="searchrow hidden"><input id="search" class="searchbox" type="search" placeholder="Buscar una aplicación…" aria-label="Buscar aplicación" autocomplete="off" /><button id="search-submit" class="primary" type="button">Buscar</button><button id="search-clear" class="secondary" type="button">Limpiar</button></div>
+      <div id="apps" class="grid"></div><div id="app-pager" class="app-pager hidden"><button type="button" id="app-prev" class="secondary">‹ Anterior</button><span id="app-page-number" role="status"></span><button type="button" id="app-next" class="secondary">Siguiente ›</button></div>
     </section>
     <footer class="footer"><span>ReyTV · Edición CN60 · Aplicaciones web, sin relación comercial con las plataformas.</span><span><kbd class="key">← ↑ ↓ →</kbd> Navegar &nbsp; <kbd class="key">Enter</kbd> Abrir &nbsp; <kbd class="key">Esc</kbd> Volver &nbsp; <kbd class="key">/</kbd> Buscar</span></footer>
   </main>
@@ -226,6 +300,15 @@
   <div id="modal" class="overlay hidden" role="presentation">
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div id="modal-content"></div>
+    </div>
+  </div>
+  <div id="screen-keyboard" class="keyboard-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="keyboard-title">
+    <div class="keyboard-deck">
+      <div class="keyboard-head"><div><span class="keyboard-overline">REYTV · ENTRADA DE TEXTO</span><h2 id="keyboard-title">Escribir</h2></div><button type="button" id="keyboard-cancel" class="secondary">Cancelar</button></div>
+      <input id="keyboard-value" type="text" autocomplete="off" spellcheck="false" aria-label="Texto que estás escribiendo" />
+      <div class="keyboard-modes"><button type="button" data-mode="lower">abc</button><button type="button" data-mode="upper">ABC</button><button type="button" data-mode="number">123 / #</button><button type="button" data-mode="symbols">Más símbolos</button><button type="button" id="keyboard-reveal" hidden>Mostrar clave</button></div>
+      <div id="native-keys" class="keyboard-keys"></div>
+      <div class="keyboard-bottom"><button type="button" id="keyboard-space">Espacio</button><button type="button" id="keyboard-delete">⌫ Borrar</button><button type="button" id="keyboard-done" class="primary">Listo</button></div>
     </div>
   </div>
   <script>
@@ -254,6 +337,9 @@
     let custom = Array.isArray(stored.custom) ? stored.custom.filter(a=>a && typeof a.id === 'string' && typeof a.name === 'string' && typeof a.url === 'string' && /^https:\/\//i.test(a.url)).slice(0,24) : [];
     let page = 'inicio';
     let searchText = '';
+    let appPage=0, appPageCount=1;
+    let autoScrollEnabled=true;try{autoScrollEnabled=localStorage.getItem('reytv-pointer-scroll')!=='off';}catch{}
+    let keyboardTarget=null, keyboardReturn=null, restoringFocus=false, keyMode="lower";
     let focusBeforeModal = null;
     let modalType = '';
     const save = () => { try { localStorage.setItem(STORAGE_KEY,JSON.stringify({favorites:[...favorites],custom})); } catch { /* La interfaz sigue funcionando sin almacenamiento. */ } };
@@ -286,16 +372,17 @@
       const b=document.createElement('button'); b.type='button';b.className='utility-card';b.innerHTML='<span class="utility-icon">＋</span><span><strong>Añadir servicio</strong><small>Crea un acceso a otra página web</small></span>';b.addEventListener('click',()=>openModal('add'));return b;
     }
     function render(){
-      const sections={inicio:TV_MODE?['Tus aplicaciones','F8 · Inicio']:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Ajustes','ReyTV 0.4.3']};
+      const sections={inicio:TV_MODE?['Tus aplicaciones','F8 · Inicio']:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Ajustes','ReyTV 0.4.4']};
       const [title,chip]=sections[page]; $('section-heading').textContent=title;$('section-chip').textContent=chip;
       $('hero').classList.toggle('hidden',page!=='inicio');$('searchrow').classList.toggle('hidden',page!=='aplicaciones');
       document.querySelectorAll('[data-page]').forEach(btn=>{if(btn.dataset.page===page)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});
-      const grid=$('apps');grid.replaceChildren();grid.classList.toggle('hidden',page==='ajustes');
+      const grid=$('apps');grid.replaceChildren();grid.classList.toggle('hidden',page==='ajustes');$('app-pager').classList.add('hidden');
+      document.body.dataset.screen=page;
       $('settings')?.remove();
       if(page==='ajustes'){
         const panel=document.createElement('div');panel.id='settings';panel.className='settings-panel tv-settings';
         const categories=[['wifi','Red e Internet','Wi-Fi y conexiones'],['bluetooth','Bluetooth','Dispositivos inalámbricos'],['sound','Sonido','Volumen del equipo'],['updates','Actualizaciones','Software de ReyTV'],['help','Ayuda y controles','Atajos y mantenimiento']];
-        panel.innerHTML='<aside class="settings-rail" aria-label="Categorías de ajustes"><p class="settings-kicker">DISPOSITIVO</p><div class="settings-categories"></div><div class="settings-rail-footer"><span>ReyTV</span><small>VERSIÓN 0.4.3</small></div></aside><div class="settings-stage"><div id="settings-native-slot"></div><section data-settings-pane="updates" class="settings-detail" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('updates')+'</div><div><p class="settings-kicker">SOFTWARE</p><h2>Actualizaciones</h2><p>Tu ReyTV, siempre al día.</p></div></div><div class="update-box"><div class="update-version"><span>Versión de ReyTV</span><strong id="settings-version">0.4.3</strong></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-bootstrap" class="update-message" hidden></p></div><p class="settings-footnote">Conserva favoritos y aplicaciones. Debian y el firmware se actualizan por separado.</p></section><section data-settings-pane="help" class="settings-detail" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('help')+'</div><div><p class="settings-kicker">ASISTENCIA</p><h2>Ayuda y controles</h2><p>Todo lo necesario para moverte por ReyTV.</p></div></div><div class="settings-keylist"><div><b>Flechas</b><span>Navegar</span></div><div><b>Enter</b><span>Seleccionar</span></div><div><b>Esc</b><span>Volver</span></div><div><b>F8</b><span>Inicio desde una aplicación</span></div><div><b>F2</b><span>Marcar favorito</span></div><div><b>Ctrl + Alt + Esc</b><span>Escritorio de mantenimiento</span></div><div><b>Ctrl + Alt + M</b><span>Terminal de mantenimiento</span></div></div><button type="button" class="secondary" id="settings-help">Ver ayuda del teclado</button></section></div>';
+        panel.innerHTML='<aside class="settings-rail" aria-label="Categorías de ajustes"><p class="settings-kicker">DISPOSITIVO</p><div class="settings-categories"></div><div class="settings-rail-footer"><span>ReyTV</span><small>VERSIÓN 0.4.4</small></div></aside><div class="settings-stage"><div id="settings-native-slot"></div><section data-settings-pane="updates" class="settings-detail" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('updates')+'</div><div><p class="settings-kicker">SOFTWARE</p><h2>Actualizaciones</h2><p>Tu ReyTV, siempre al día.</p></div></div><div class="update-box"><div class="update-version"><span>Versión de ReyTV</span><strong id="settings-version">0.4.4</strong></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-bootstrap" class="update-message" hidden></p></div><p class="settings-footnote">Conserva favoritos y aplicaciones. Debian y el firmware se actualizan por separado.</p></section><section data-settings-pane="help" class="settings-detail" hidden><div class="settings-heading"><div class="settings-feature-icon">'+settingIcon('help')+'</div><div><p class="settings-kicker">ASISTENCIA</p><h2>Ayuda y controles</h2><p>Todo lo necesario para moverte por ReyTV.</p></div></div><div class="settings-keylist"><div><b>Flechas</b><span>Navegar</span></div><div><b>Enter</b><span>Seleccionar</span></div><div><b>Esc</b><span>Volver</span></div><div><b>F8</b><span>Inicio desde una aplicación</span></div><div><b>F2</b><span>Marcar favorito</span></div><div><b>Ctrl + Alt + Esc</b><span>Escritorio de mantenimiento</span></div><div><b>Ctrl + Alt + M</b><span>Terminal de mantenimiento</span></div></div><div class="pointer-pref"><div><strong>Desplazamiento por puntero</strong><small>Solo en listas largas, fuera de la zona central.</small></div><button type="button" id="pointer-scroll-toggle" class="secondary" aria-pressed="true">Activado</button></div><button type="button" class="secondary" id="settings-help">Ver ayuda del teclado</button></section></div>';
         const rail=panel.querySelector('.settings-categories');
         for(const [id,label,desc] of categories){
           const item=document.createElement('button');item.type='button';item.className='settings-category';item.dataset.settingsCategory=id;
@@ -305,6 +392,9 @@
         $('content').appendChild(panel);
         setupNativeSettings($('settings-native-slot'));
         setupUpdates();
+        const pointerToggle=$('pointer-scroll-toggle');
+        function paintPointerToggle(){pointerToggle.textContent=autoScrollEnabled?'Activado':'Desactivado';pointerToggle.setAttribute('aria-pressed',String(autoScrollEnabled));}
+        paintPointerToggle();pointerToggle.onclick=()=>{autoScrollEnabled=!autoScrollEnabled;stopPointerScroll();try{localStorage.setItem('reytv-pointer-scroll',autoScrollEnabled?'on':'off');}catch{}paintPointerToggle();};
         $('settings-help').onclick=()=>openModal('help');
         function selectCategory(id,enter=false){
           settingsCategory=id;
@@ -322,8 +412,10 @@
       }
       const list=allApps().filter(a=>(page==='aplicaciones'||(TV_MODE&&page==='inicio')||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));
       if(list.length===0){const empty=document.createElement('p');empty.className='empty';empty.textContent=page==='favoritos'?'Todavía no tienes favoritos. Ve a Aplicaciones y marca alguna estrella.':'No hay resultados. Prueba con otra búsqueda.';grid.appendChild(empty);}
-      for(const a of list)grid.appendChild(makeAppCard(a));
-      if(page==='aplicaciones')grid.appendChild(addCard());
+      const cards=list.map(a=>()=>makeAppCard(a));if(page==='aplicaciones')cards.push(()=>addCard());
+      const size=innerWidth<650?4:innerWidth<950?6:8;appPageCount=Math.max(1,Math.ceil(cards.length/size));appPage=Math.min(appPage,appPageCount-1);
+      for(const create of cards.slice(appPage*size,(appPage+1)*size))grid.appendChild(create());
+      $('app-pager').classList.toggle('hidden',appPageCount<=1);$('app-page-number').textContent=(appPage+1)+' / '+appPageCount;$('app-prev').disabled=appPage===0;$('app-next').disabled=appPage>=appPageCount-1;
     }
 
     function setupNativeSettings(panel){
@@ -418,33 +510,13 @@
       local('native-mute').onclick=()=>send('sound_mute',{muted:!data.sound.muted});
       function passwordDialog(ssid){
         const overlay=$('modal');focusBeforeModal=document.activeElement;modalType='wifi';
-        $('modal-content').innerHTML='<div class="native-modal"><h2 id="modal-title">Conectar a Wi-Fi</h2><p id="native-ssid-label"></p>'+
-          '<label class="field"><span>Contraseña de la red</span><input id="native-pass" type="password" maxlength="64" autocomplete="off" /></label>'+
-          '<div class="native-actions"><button type="button" data-keyset="lower">abc</button><button type="button" data-keyset="upper">ABC</button><button type="button" data-keyset="number">123</button><button type="button" id="native-toggle-pass">Mostrar clave</button></div>'+
-          '<div class="virtual-keyboard" id="native-keys"></div><div class="dialog-actions"><button type="button" class="secondary" data-close>Cancelar</button><button type="button" class="primary" id="native-join">Conectar</button></div></div>';
+        $('modal-content').innerHTML='<div class="native-modal"><h2 id="modal-title">Conectar a Wi-Fi</h2><p id="native-ssid-label"></p><label class="field"><span>Contraseña de la red</span><input id="native-pass" type="password" maxlength="64" autocomplete="off" /></label><div class="dialog-actions"><button type="button" class="secondary" data-close>Cancelar</button><button type="button" class="primary" id="native-join">Conectar</button></div></div>';
         $('native-ssid-label').textContent=ssid;
-        const entry=$('native-pass'),keys=$('native-keys');
-        function keyset(mode){
-          keys.replaceChildren();
-          const chars=mode==='upper'?'ABCDEFGHIJKLMNOPQRSTUVWXYZ':mode==='number'?'0123456789!@#$%&*+-_.?': 'abcdefghijklmnopqrstuvwxyz';
-          for(const char of chars){
-            const button=document.createElement('button');button.type='button';button.textContent=char;
-            button.addEventListener('click',()=>{if(entry.value.length<64)entry.value+=char;button.focus();});keys.appendChild(button);
-          }
-          for(const [name,value] of [['Espacio',' '],['Borrar','DEL']]){
-            const button=document.createElement('button');button.type='button';button.className='wide';button.textContent=name;
-            button.addEventListener('click',()=>{entry.value=value==='DEL'?entry.value.slice(0,-1):(entry.value+value).slice(0,64);button.focus();});keys.appendChild(button);
-          }
-        }
-        keyset('lower');
-        overlay.querySelectorAll('[data-keyset]').forEach(button=>button.addEventListener('click',()=>{keyset(button.dataset.keyset);keys.firstChild?.focus();}));
-        $('native-toggle-pass').onclick=()=>{entry.type=entry.type==='password'?'text':'password';};
+        const entry=$('native-pass');
         overlay.querySelector('[data-close]').onclick=closeModal;
-        $('native-join').onclick=()=>{
-          const pwd=entry.value;entry.value='';closeModal();send('wifi_connect',{ssid,password:pwd});
-        };
+        $('native-join').onclick=()=>{const pwd=entry.value;entry.value='';closeModal();send('wifi_connect',{ssid,password:pwd});};
         overlay.classList.remove('hidden');overlay.addEventListener('click',overlayClick);
-        (TV_MODE?keys.firstElementChild:entry)?.focus();
+        openKeyboard(entry);
       }
       (async()=>{
         try{
@@ -504,12 +576,17 @@
         await reloadWhenReady();
       }));
     }
-    function goPage(next){if(!['inicio','aplicaciones','favoritos','ajustes'].includes(next))return;page=next;searchText='';$('search').value='';render();window.scrollTo({top:0,behavior:'smooth'});}
+    function goPage(next){if(!['inicio','aplicaciones','favoritos','ajustes'].includes(next))return;if(keyboardTarget)closeKeyboard(false);stopPointerScroll();page=next;appPage=0;searchText='';$('search').value='';render();$('content').scrollTop=0;window.scrollTo({top:0,behavior:'instant'});}
     document.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>goPage(btn.dataset.page)));
     $('brand').addEventListener('click',ev=>{ev.preventDefault();goPage('inicio');});
     $('watch').addEventListener('click',()=>window.open('https://www.youtube.com/','_blank','noopener,noreferrer'));
     $('help').addEventListener('click',()=>openModal('help'));
-    $('search').addEventListener('input',ev=>{searchText=ev.target.value.trim().toLowerCase();render();});
+    function runSearch(){searchText=$('search').value.trim().toLowerCase();appPage=0;render();($('apps').querySelector('.app-card')||$('search-submit')).focus({preventScroll:true});}
+    $('search-submit').onclick=()=>{if(keyboardTarget)closeKeyboard(true);else runSearch();};
+    $('search-clear').onclick=()=>{$('search').value='';runSearch();};
+    function changeAppPage(delta){appPage=Math.max(0,Math.min(appPageCount-1,appPage+delta));render();$('apps').querySelector('.app-card,.utility-card')?.focus({preventScroll:true});}
+    $('app-prev').onclick=()=>changeAppPage(-1);$('app-next').onclick=()=>changeAppPage(1);
+    window.addEventListener('resize',()=>{if(page!=='ajustes'&&!keyboardTarget&&!modalType)render();});
     function openModal(type){
       focusBeforeModal=document.activeElement;modalType=type;
       if(type==='add'){$('modal-content').innerHTML='<h2 id="modal-title">Añadir servicio</h2><p>Guarda un acceso directo a una página web. Solo se permiten direcciones HTTPS.</p><form id="add-form"><label class="field"><span>Nombre</span><input name="name" id="custom-name" maxlength="34" required placeholder="Ej. Crunchyroll" /></label><label class="field"><span>Dirección web</span><input name="url" id="custom-url" inputmode="url" required placeholder="https://www.ejemplo.com" /></label><div class="error" id="form-error" role="alert"></div><div class="dialog-actions"><button type="button" class="secondary" data-close>Cancelar</button><button class="primary" type="submit">Guardar acceso</button></div></form>'; $('add-form').addEventListener('submit',addCustom);}
@@ -528,17 +605,135 @@
       custom.push({id,name:name.slice(0,34),url:url.href,subtitle:'Acceso personalizado',badge:'MI SERVICIO',c1:'#2b3b65',c2:'#121b35',glow:'#7a8bea'});favorites.add(id);save();closeModal();goPage('aplicaciones');
     }
     function overlayClick(ev){if(ev.target===$('modal'))closeModal();}
-    function closeModal(){$('modal').classList.add('hidden');$('modal').removeEventListener('click',overlayClick);modalType='';$('modal-content').replaceChildren();if(focusBeforeModal?.isConnected)focusBeforeModal.focus();}
+    function closeModal(){if(keyboardTarget)closeKeyboard(false);$('modal').classList.add('hidden');$('modal').removeEventListener('click',overlayClick);modalType='';$('modal-content').replaceChildren();if(focusBeforeModal?.isConnected)focusBeforeModal.focus();}
+
+    // Teclado universal: los campos actuales y futuros lo activan por foco o clic.
+    const isKeyboardField=el=>!!el?.matches?.('input:not([type]),input[type="text"],input[type="search"],input[type="url"],input[type="email"],input[type="password"],input[type="tel"],textarea')&&!el.readOnly&&!el.disabled&&el.id!=='keyboard-value';
+    function focusSilently(el){if(!el?.isConnected)return;restoringFocus=true;try{el.focus({preventScroll:true});}finally{restoringFocus=false;}}
+    function openKeyboard(field){
+      if(!isKeyboardField(field)||keyboardTarget===field)return;
+      if(keyboardTarget)closeKeyboard(false);
+      stopPointerScroll();
+      keyboardTarget=field;keyboardReturn=field;keyMode='lower';
+      const value=$('keyboard-value');
+      value.type=field.type==='password'?'password':'text';
+      value.value=field.value;value.maxLength=field.maxLength>0?field.maxLength:2048;
+      $('keyboard-reveal').hidden=field.type!=='password';
+      $('keyboard-reveal').textContent='Mostrar clave';
+      $('keyboard-title').textContent=field.labels?.[0]?.textContent.trim()||field.getAttribute('aria-label')||field.placeholder||'Escribir';
+      $('keyboard-done').textContent=field.id==='search'?'Buscar':field.id==='custom-name'?'Siguiente':'Listo';
+      $('screen-keyboard').classList.remove('hidden');
+      drawKeys();
+      $('native-keys').firstElementChild?.focus({preventScroll:true});
+    }
+    function closeKeyboard(commit){
+      if(!keyboardTarget)return;
+      const field=keyboardTarget,previous=keyboardReturn,newValue=$('keyboard-value').value;
+      keyboardTarget=keyboardReturn=null;
+      $('screen-keyboard').classList.add('hidden');$('keyboard-value').value='';$('keyboard-value').type='text';
+      if(commit&&field.isConnected){
+        field.value=newValue;field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));
+        if(field.id==='search'){runSearch();return;}
+        if(field.id==='native-pass'){focusSilently($('native-join'));return;}
+        const form=field.closest('form');
+        const inputs=form?[...form.querySelectorAll('input,textarea')].filter(isKeyboardField):[];
+        const next=inputs[inputs.indexOf(field)+1];
+        if(next){openKeyboard(next);return;}
+        if(form){focusSilently(form.querySelector('button[type="submit"]'));return;}
+      }
+      focusSilently(previous);
+    }
+    function editKeyboard(text,backspace=false){
+      const value=$('keyboard-value');let a=value.selectionStart??value.value.length,b=value.selectionEnd??a;
+      // Cuando se navega sobre las teclas, se conserva el punto de inserción del campo espejo.
+      if(backspace&&a===b)a=Math.max(0,a-1);
+      const insert=backspace?'':text;
+      if(value.value.length-(b-a)+insert.length>value.maxLength)return;
+      value.setRangeText(insert,a,b,'end');
+    }
+    function drawKeys(){
+      const grid=$('native-keys');grid.replaceChildren();
+      const chars=keyMode==='upper'?'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ':keyMode==='number'?'0123456789@._-/:+!?#%&*=$()[];,':keyMode==='symbols'?"\\<>¡¿'\"|^~{}áéíóúüÁÉÍÓÚÜ`€":"abcdefghijklmnñopqrstuvwxyz";
+      for(const ch of chars){
+        const button=document.createElement('button');button.type='button';button.textContent=ch;
+        button.addEventListener('click',()=>editKeyboard(ch));grid.appendChild(button);
+      }
+      document.querySelectorAll('.keyboard-modes [data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===keyMode)));
+    }
+    document.querySelectorAll('.keyboard-modes [data-mode]').forEach(b=>b.onclick=()=>{keyMode=b.dataset.mode;drawKeys();$('native-keys').firstElementChild?.focus();});
+    $('keyboard-space').onclick=()=>editKeyboard(' ');
+    $('keyboard-delete').onclick=()=>editKeyboard('',true);
+    $('keyboard-done').onclick=()=>closeKeyboard(true);
+    $('keyboard-cancel').onclick=()=>closeKeyboard(false);
+    $('keyboard-reveal').onclick=()=>{const v=$('keyboard-value');v.type=v.type==='password'?'text':'password';$('keyboard-reveal').textContent=v.type==='password'?'Mostrar clave':'Ocultar clave';};
+    document.addEventListener('focusin',e=>{if(!restoringFocus&&isKeyboardField(e.target)&&!keyboardTarget)openKeyboard(e.target);});
+    document.addEventListener('click',e=>{if(isKeyboardField(e.target)&&!keyboardTarget)openKeyboard(e.target);});
+    function keyboardKey(event){
+      if(!keyboardTarget)return false;
+      if(event.key==='Escape'){event.preventDefault();closeKeyboard(false);return true;}
+      const value=$('keyboard-value'),active=document.activeElement;
+      if(event.key==='Enter'&&active===value){event.preventDefault();closeKeyboard(true);return true;}
+      if(event.key==='Tab'){
+        event.preventDefault();
+        const nodes=[...$('screen-keyboard').querySelectorAll('input,button')].filter(n=>n.getClientRects().length&&!n.disabled);
+        const i=nodes.indexOf(active);nodes[(i+(event.shiftKey?-1:1)+nodes.length)%nodes.length]?.focus();return true;
+      }
+      if(event.key.startsWith('Arrow')&&active!==value){
+        event.preventDefault();moveFocus(event.key,$('screen-keyboard'));return true;
+      }
+      if(active!==value&&!event.ctrlKey&&!event.altKey&&!event.metaKey){
+        if(event.key==='Backspace'){event.preventDefault();editKeyboard('',true);return true;}
+        if(event.key.length===1&&event.key!==' '){event.preventDefault();editKeyboard(event.key);return true;}
+      }
+      return true; // No ejecutar atajos globales mientras se escribe.
+    }
+    // Scroll por posición: solo superficies que realmente desbordan. Sin mover el cursor.
+    let scrollTarget=null,scrollDirection=0,scrollStrength=0,scrollArmedAt=0,scrollLast=0,scrollCarry=0,scrollRAF=0,scrollPausedUntil=0;
+    function stopPointerScroll(){if(scrollRAF)cancelAnimationFrame(scrollRAF);scrollRAF=0;scrollTarget=null;scrollDirection=0;scrollStrength=0;scrollLast=0;scrollCarry=0;}
+    function pointerScrollFrame(now){
+      scrollRAF=0;
+      if(!autoScrollEnabled||!scrollTarget?.isConnected||!scrollDirection||keyboardTarget||document.hidden){stopPointerScroll();return;}
+      if(now<scrollPausedUntil||now-scrollArmedAt<180){scrollLast=now;scrollRAF=requestAnimationFrame(pointerScrollFrame);return;}
+      const dt=Math.min(40,Math.max(0,now-(scrollLast||now)));scrollLast=now;
+      const speed=12+780*scrollStrength*scrollStrength;
+      scrollCarry+=scrollDirection*speed*dt/1000;
+      const delta=Math.trunc(scrollCarry);scrollCarry-=delta;
+      if(delta)scrollTarget.scrollTop+=delta;
+      const atEdge=scrollDirection<0?scrollTarget.scrollTop<=0:scrollTarget.scrollTop>=scrollTarget.scrollHeight-scrollTarget.clientHeight-1;
+      if(atEdge){stopPointerScroll();return;}
+      scrollRAF=requestAnimationFrame(pointerScrollFrame);
+    }
+    document.addEventListener('pointermove',e=>{
+      if(!autoScrollEnabled||e.pointerType!=='mouse'||e.buttons||keyboardTarget||performance.now()<scrollPausedUntil||e.target.closest('input,textarea,select,[contenteditable="true"]')){stopPointerScroll();return;}
+      const candidates=modalType?[$('modal').querySelector('.dialog')]:[e.target.closest('.settings-stage'),$('content')];
+      const area=candidates.find(el=>el&&el.scrollHeight>el.clientHeight+2&&(()=>{const r=el.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=Math.max(0,r.top)&&e.clientY<=Math.min(innerHeight,r.bottom);})());
+      if(!area){stopPointerScroll();return;}
+      const r=area.getBoundingClientRect(),top=Math.max(0,r.top),bottom=Math.min(innerHeight,r.bottom);
+      const y=(e.clientY-top)/Math.max(1,bottom-top);
+      // Centro libre: 50% de la altura útil; aceleración cuadrática hacia los bordes.
+      const direction=y<.25?-1:y>.75?1:0;
+      const strength=direction<0?(.25-y)/.25:direction>0?(y-.75)/.25:0;
+      if(!direction){stopPointerScroll();return;}
+      if(area!==scrollTarget||direction!==scrollDirection){stopPointerScroll();scrollTarget=area;scrollDirection=direction;scrollArmedAt=performance.now();}
+      scrollStrength=Math.min(1,Math.max(0,strength));
+      if(!scrollRAF)scrollRAF=requestAnimationFrame(pointerScrollFrame);
+    },{passive:true});
+    document.addEventListener('pointerdown',()=>{stopPointerScroll();scrollPausedUntil=performance.now()+550;},{passive:true});
+    document.addEventListener('pointerout',e=>{if(!e.relatedTarget)stopPointerScroll();},{passive:true});
+    window.addEventListener('blur',stopPointerScroll);
+    document.addEventListener('visibilitychange',stopPointerScroll);
+    document.addEventListener('wheel',()=>{stopPointerScroll();scrollPausedUntil=performance.now()+350;},{passive:true});
+
     function isTextEntry(el){return !!el && (el.matches?.('input,textarea,select')||el.isContentEditable);}
-    function moveFocus(direction){
+    function moveFocus(direction,scope=document){
       const focused=document.activeElement;
-      if(page==='ajustes'&&focused?.matches('.settings-category')){
+      if(scope===document&&page==='ajustes'&&focused?.matches('.settings-category')){
         if(direction==='ArrowRight'){focused.click();return;}
         const rail=[...document.querySelectorAll('.settings-category')],index=rail.indexOf(focused);
         if(direction==='ArrowDown'&&index<rail.length-1){rail[index+1].focus();return;}
         if(direction==='ArrowUp'&&index>0){rail[index-1].focus();return;}
       }
-      const nodes=[...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled])')].filter(node=>node.getClientRects().length>0 && !node.closest('.hidden') && !(TV_MODE&&node.classList.contains('fav-btn')));
+      const nodes=[...scope.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled])')].filter(node=>node.getClientRects().length>0 && !node.closest('.hidden') && !(TV_MODE&&node.classList.contains('fav-btn')));
       if(nodes.length===0)return;
       const active=document.activeElement; const source=nodes.includes(active)?active:nodes[0];
       if(!nodes.includes(active)){source.focus({preventScroll:true});source.scrollIntoView({block:'nearest',inline:'nearest'});return;}
@@ -550,6 +745,8 @@
       if(best){best.focus({preventScroll:true});best.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});}
     }
     document.addEventListener('keydown',event=>{
+      stopPointerScroll();scrollPausedUntil=performance.now()+350;
+      if(keyboardKey(event))return;
       const inputMode=isTextEntry(document.activeElement);
       if(TV_MODE&&event.key==='F2'&&!modalType&&!inputMode){event.preventDefault();document.activeElement?.closest('.app-wrap')?.querySelector('.fav-btn')?.click();return;}
       if(event.key==='Escape'){
@@ -558,9 +755,12 @@
         if(page==='ajustes'&&document.activeElement?.closest('.settings-stage')){event.preventDefault();document.querySelector('.settings-category.active')?.focus();return;}
         if(page!=='inicio'){event.preventDefault();goPage('inicio');}return;
       }
-      if(event.key==='/'&&!inputMode&&!modalType){event.preventDefault();goPage('aplicaciones');$('search').focus();return;}
+      if(event.key==='/'&&!inputMode&&!modalType){event.preventDefault();goPage('aplicaciones');openKeyboard($('search'));return;}
+      if(!modalType&&page!=='ajustes'&&event.key==='PageDown'){event.preventDefault();changeAppPage(1);return;}
+      if(!modalType&&page!=='ajustes'&&event.key==='PageUp'){event.preventDefault();changeAppPage(-1);return;}
+      if(inputMode&&event.key==='Enter'&&isKeyboardField(document.activeElement)){event.preventDefault();openKeyboard(document.activeElement);return;}
       if(event.key==='Backspace'&&!inputMode&&!modalType&&page!=='inicio'){event.preventDefault();if(page==='ajustes'&&document.activeElement?.closest('.settings-stage'))document.querySelector('.settings-category.active')?.focus();else goPage('inicio');return;}
-      if(event.key.startsWith('Arrow')&&!inputMode){event.preventDefault();if(modalType){const modalNodes=[...$('modal').querySelectorAll('button,input')];const pos=modalNodes.indexOf(document.activeElement);const step=(event.key==='ArrowRight'||event.key==='ArrowDown')?1:-1;modalNodes[(pos+step+modalNodes.length)%modalNodes.length]?.focus();}else moveFocus(event.key);}
+      if(event.key.startsWith('Arrow')&&!inputMode){event.preventDefault();if(modalType){moveFocus(event.key,$('modal'));}else moveFocus(event.key);}
     });
     render();
     if(TV_MODE)requestAnimationFrame(()=>document.querySelector('.app-card')?.focus({preventScroll:true}));

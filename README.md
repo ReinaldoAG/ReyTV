@@ -148,3 +148,7 @@ La primera instalación sigue siendo un paso manual de interfaz gráfica (descar
 ## ReyTV 0.4.3 – Ajustes para televisión
 
 Ajustes tiene un único menú lateral: Red e Internet, Bluetooth, Sonido, Actualizaciones y Ayuda y controles. Cada categoría abre sus propios controles; no se muestran categorías duplicadas ni funciones todavía no implementadas. Flechas y Enter permiten navegar; Esc devuelve el foco a la categoría, y desde el menú lateral vuelve a Inicio. El teclado Wi-Fi, el actualizador y la recuperación conservan sus funciones. Se instala desde Ajustes > Actualizaciones en 0.4.2 con el actualizador completo.
+
+## ReyTV 0.4.4 – Experiencia de consola
+
+En pantallas de televisión, el documento ocupa una sola pantalla, la parrilla de aplicaciones se pagina y solo los paneles largos pueden desplazarse internamente. El puntero activa el desplazamiento cuando sale del 50% central de una superficie con contenido sobrante: 180 ms de espera y velocidad creciente hacia los bordes. Se detiene con teclado, clic, rueda, retorno a la zona central o fin del contenido. Puede apagarse en Ajustes > Ayuda y controles. No se reposiciona físicamente el cursor. El teclado universal se activa en los campos de texto propios de ReyTV, incluye búsqueda con cierre automático, URL y nombre de servicios, contraseña Wi-Fi y capas de símbolos. No modifica páginas de terceros. Los cambios se distribuyen con el actualizador integrado.
