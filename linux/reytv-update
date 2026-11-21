@@ -1,81 +1,65 @@
 #!/usr/bin/env bash
-# Actualiza SOLO la interfaz web de ReyTV desde la rama main del repo.
-# No ejecuta código descargado con permisos de administrador, no toca Debian.
+# ReyTV: actualización de archivos del usuario; jamás /etc, /usr/local ni Debian.
 set -euo pipefail
-
-APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/reytv"
-STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/reytv"
-CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/reytv"
-CLONE="$CACHE_DIR/git-source"
-REPO="${REYTV_REPO_URL:-https://github.com/ReinaldoAG/ReyTV.git}"
-BRANCH="${REYTV_CHANNEL:-main}"
+[[ "$(id -u)" != 0 ]] || { echo 'No ejecutar como root.' >&2; exit 1; }
+APP="${XDG_DATA_HOME:-$HOME/.local/share}/reytv"
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/reytv"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/reytv"
+BIN="$HOME/.local/bin"
+BRANCH=main
+REPO='https://github.com/ReinaldoAG/ReyTV.git'
 FORCE=0
-
-if [[ "${1:-}" == '--force' ]]; then FORCE=1
-elif [[ $# -gt 0 ]]; then echo 'Uso: reytv-update [--force]' >&2; exit 2
-fi
-[[ "$BRANCH" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo 'Canal de actualización no válido.' >&2; exit 2; }
-command -v git >/dev/null || { echo 'Instala git antes de actualizar ReyTV.' >&2; exit 1; }
-[[ -f "$APP_DIR/index.html" ]] || { echo 'Instala ReyTV antes de actualizar.' >&2; exit 1; }
-
-mkdir -p "$STATE_DIR" "$CACHE_DIR"
-
-# El canal público solo necesita HTTPS. Para instalaciones antiguas que todavía
-# usen un repositorio SSH privado se mantiene la compatibilidad con deploy keys.
-if [[ "$REPO" == git@* ]]; then
-  if [[ -f "$HOME/.ssh/reytv_deploy" ]]; then
-    export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -i $HOME/.ssh/reytv_deploy"
-  else
-    export GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes'
-  fi
-fi
-
+if [[ "${1:-}" == --force ]]; then FORCE=1
+elif [[ $# -ne 0 ]]; then echo 'Uso: reytv-update [--force]' >&2; exit 2; fi
+[[ -s "$APP/index.html" ]] || { echo 'ReyTV no está instalado.' >&2; exit 1; }
+mkdir -p "$STATE" "$CACHE" "$BIN"
+CLONE="$CACHE/git-source"
 if [[ ! -d "$CLONE/.git" ]]; then
-  git clone --quiet --no-checkout --depth 1 --single-branch --branch "$BRANCH" -- "$REPO" "$CLONE"
-  NEXT_SHA="$(git -C "$CLONE" rev-parse HEAD)"
+  git clone -q --no-checkout --depth 1 --single-branch -b "$BRANCH" "$REPO" "$CLONE"
+  SHA="$(git -C "$CLONE" rev-parse HEAD)"
 else
-  # Al pasar del canal privado SSH a HTTPS no reutilizar la URL anterior.
   git -C "$CLONE" remote set-url origin "$REPO"
-  git -C "$CLONE" fetch --quiet --depth 1 origin "$BRANCH"
-  NEXT_SHA="$(git -C "$CLONE" rev-parse FETCH_HEAD)"
+  git -C "$CLONE" fetch -q --depth 1 origin "$BRANCH"
+  SHA="$(git -C "$CLONE" rev-parse FETCH_HEAD)"
 fi
-[[ "$NEXT_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'No se pudo verificar el commit.' >&2; exit 1; }
-
-if [[ "$FORCE" -ne 1 && -f "$STATE_DIR/blocked.sha" && "$(<"$STATE_DIR/blocked.sha")" == "$NEXT_SHA" ]]; then
-  echo "La actualización $NEXT_SHA fue revertida anteriormente. Esperando una versión nueva (o --force)."
+[[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
+if [[ "$FORCE" == 0 && -s "$STATE/blocked.sha" && "$(cat "$STATE/blocked.sha")" == "$SHA" ]]; then
+  echo 'La versión fue revertida previamente; esperando una nueva.'
   exit 0
 fi
-if [[ -f "$STATE_DIR/current.sha" && "$(<"$STATE_DIR/current.sha")" == "$NEXT_SHA" ]]; then
-  echo "ReyTV ya está actualizada: ${NEXT_SHA:0:12}"
+if [[ "$FORCE" == 0 && -s "$STATE/current.sha" && "$(cat "$STATE/current.sha")" == "$SHA" ]]; then
+  echo 'ReyTV ya está actualizada.'
   exit 0
 fi
-
-TMP="$(mktemp "$APP_DIR/.index.XXXXXXXX")"
-trap 'rm -f -- "$TMP"' EXIT
-git -C "$CLONE" show "$NEXT_SHA:index.html" > "$TMP"
-
-# Validación básica antes de reemplazar el menú de usuario.
-BYTES="$(wc -c < "$TMP")"
-if [[ "$BYTES" -lt 3000 || "$BYTES" -gt 300000 ]] || ! grep -Fq '<title>ReyTV' "$TMP" || ! grep -Fq '</html>' "$TMP"; then
-  echo 'La versión descargada no parece una interfaz ReyTV válida; se conserva la actual.' >&2
-  exit 1
-fi
-
-if cmp -s "$TMP" "$APP_DIR/index.html"; then
-  printf '%s\n' "$NEXT_SHA" > "$STATE_DIR/current.sha"
-  echo "Misma interfaz; registrado commit ${NEXT_SHA:0:12}."
-  exit 0
-fi
-
-cp -p -- "$APP_DIR/index.html" "$STATE_DIR/previous-index.html"
-if [[ -f "$STATE_DIR/current.sha" ]]; then
-  cp -p -- "$STATE_DIR/current.sha" "$STATE_DIR/previous.sha"
-else
-  printf '%s\n' 'initial-install' > "$STATE_DIR/previous.sha"
-fi
-chmod 0644 "$TMP"
-mv -f -- "$TMP" "$APP_DIR/index.html"
-printf '%s\n' "$NEXT_SHA" > "$STATE_DIR/current.sha"
-rm -f -- "$STATE_DIR/blocked.sha"
-
-echo "ReyTV actualizada a ${NEXT_SHA:0:12}. Recarga el menú para ver los cambios."
+TEMP="$(mktemp -d "$CACHE/.reytv-stage.XXXXXXXX")"
+trap 'rm -rf -- "$TEMP"' EXIT
+NAMES=(index.html reytv-server.py reytv-native.py reytv-update reytv-rollback)
+PATHS=(index.html linux/reytv-server.py linux/reytv-native.py linux/reytv-update linux/reytv-rollback)
+for j in "${!NAMES[@]}"; do
+  git -C "$CLONE" show "$SHA:${PATHS[$j]}" > "$TEMP/${NAMES[$j]}"
+done
+SIZE="$(wc -c < "$TEMP/index.html")"
+[[ "$SIZE" -ge 3000 && "$SIZE" -le 300000 ]] || exit 1
+grep -Fq '<title>ReyTV' "$TEMP/index.html" && grep -Fq '</html>' "$TEMP/index.html" || exit 1
+python3 -m py_compile "$TEMP/reytv-server.py" "$TEMP/reytv-native.py"
+bash -n "$TEMP/reytv-update" "$TEMP/reytv-rollback"
+PREV="$STATE/previous-bundle"
+OLD="$(mktemp -d "$STATE/.previous.XXXXXXXX")"
+for f in "${NAMES[@]}"; do
+  if [[ "$f" == index.html ]]; then src="$APP/$f"; else src="$BIN/$f"; fi
+  [[ ! -s "$src" ]] || cp -p "$src" "$OLD/$f"
+done
+[[ ! -s "$STATE/current.sha" ]] || cp -p "$STATE/current.sha" "$OLD/current.sha"
+rm -rf -- "$PREV"
+mv "$OLD" "$PREV"
+for f in "${NAMES[@]}"; do
+  if [[ "$f" == index.html ]]; then dest="$APP/$f"; mode=0644
+  elif [[ "$f" == *.py ]]; then dest="$BIN/$f"; mode=0644
+  else dest="$BIN/$f"; mode=0755; fi
+  tmp="$(mktemp "$(dirname "$dest")/.reytv-new.XXXXXXXX")"
+  install -m "$mode" "$TEMP/$f" "$tmp"
+  mv -f "$tmp" "$dest"
+done
+printf '%s\n' "$SHA" > "$STATE/current.sha"
+rm -f "$STATE/blocked.sha"
+echo "ReyTV y servicios actualizados a ${SHA:0:12}. Debian se mantiene separado."
