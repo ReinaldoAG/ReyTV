@@ -1,1 +1,18 @@
+# REYTV - COMANDOS PARA EL CHROMEBOX
+# Copia SOLAMENTE una línea de comando por vez en la terminal.
+# No copies las líneas que comienzan con #.
+
+# PASO 1 - Activar la sincronización automática de fecha y hora.
+# Te puede pedir la contraseña del usuario reytv.
+sudo timedatectl set-ntp true
+
+# PASO 2 - Comprobar que la hora y fecha sean correctas.
+# Comprueba "System clock synchronized: yes" y la fecha actual.
+timedatectl status
+
+# PASO 3 - SOLO si la fecha ya es correcta: instalar el actualizador de ReyTV.
 curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh -o /tmp/reytv-setup.sh && bash /tmp/reytv-setup.sh
+
+# Cuando aparezca "Actualizador instalado", reinicia el Chromebox.
+# Despues podras buscar actualizaciones desde ReyTV > Ajustes.
+# No uses curl -k ni --insecure: el error SSL se corrige arreglando el reloj.
