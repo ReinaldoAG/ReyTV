@@ -279,7 +279,7 @@ def mouse_overlay():
     font=x.XLoadFont(d,b"-*-*-bold-r-normal--20-*-*-*-*-*-iso8859-1")
     if font:x.XSetFont(d,kgc,font)
     key_open=False;key_mode='lower';key_pressed=None;key_rect=(0,0,820,260);field_y=None
-    focus_events=queue.SimpleQueue();mouse_down=False
+    focus_events=queue.SimpleQueue();mouse_down=False;opened_at=0.0;field_bounds=None
     mapped=False;pressed=None;last_window=0;last_size=None
     parent=os.getppid()
 
@@ -363,13 +363,13 @@ def mouse_overlay():
                         focus_events.put((False,None));return
                     states=obj.get_state_set()
                     editable=bool(states and states.contains(Atspi.StateType.EDITABLE))
-                    cy=None
+                    bounds=None
                     if editable:
                         try:
                             rect=obj.get_component_iface().get_extents(Atspi.CoordType.SCREEN)
-                            cy=rect.y+rect.height/2
+                            if rect.width>0 and rect.height>0:bounds=(rect.x,rect.y,rect.width,rect.height)
                         except Exception:pass
-                    focus_events.put((editable,cy))
+                    focus_events.put((editable,bounds))
                 except Exception:
                     pass
             listener=Atspi.EventListener.new(focused,None)
@@ -428,9 +428,9 @@ def mouse_overlay():
         key_open=False;key_pressed=None
 
     def show_keyboard():
-        nonlocal key_open,key_rect,key_mode
+        nonlocal key_open,key_rect,key_mode,opened_at
         if not browser_window():return
-        if not key_open:key_mode="lower"
+        if not key_open:key_mode="lower";opened_at=time.monotonic()
         key_rect=geometry()
         x.XMoveResizeWindow(d,kw,*key_rect)
         x.XMapRaised(d,kw);key_open=True;paint_keyboard()
@@ -484,25 +484,31 @@ def mouse_overlay():
                 else:x.XRaiseWindow(d,win)
             elif mapped:
                 x.XUnmapWindow(d,win);mapped=False;pressed=None
-            if active!=last_window:pressed=None;hide_keyboard();last_window=active
+            if active!=last_window:pressed=None;hide_keyboard();last_window=active;field_bounds=None;field_y=None
             latest=None
             while not focus_events.empty():latest=focus_events.get_nowait()
             if latest is not None and active:
-                editable,field_y=latest
+                editable,field_bounds=latest
+                field_y=field_bounds[1]+field_bounds[3]/2 if field_bounds else None
                 if editable:show_keyboard()
                 else:hide_keyboard()
-            if key_open:
-                # Un clic fuera deja libre la página para Continuar/Buscar.
+            # Reabrir al volver a pulsar un campo editable que conserva el foco.
+            # No observar el teclado físico, solo el estado del botón del ratón.
+            if active:
                 rr=U();ch=U();rx=I();ry=I();wx=I();wy=I();mask=C.c_uint()
                 if x.XQueryPointer(d,root,C.byref(rr),C.byref(ch),C.byref(rx),C.byref(ry),C.byref(wx),C.byref(wy),C.byref(mask)):
                     down=bool(mask.value&(1<<8));kx,ky,ww,hh=key_rect
-                    # No cerrar por clic en el teclado o en su barra de control.
-                    over_key=kx<=rx.value<kx+ww+2 and ky<=ry.value<ky+hh+2
+                    over_key=key_open and kx<=rx.value<kx+ww+2 and ky<=ry.value<ky+hh+2
                     over_bar=size[0]-width-18<=rx.value<=size[0]-16 and size[1]-height-18<=ry.value<=size[1]-16
-                    if down and not mouse_down and not over_key and not over_bar:hide_keyboard()
+                    on_field=False
+                    if field_bounds:
+                        fx,fy,fw,fh=field_bounds;on_field=fx<=rx.value<fx+fw and fy<=ry.value<fy+fh
+                    if down and not mouse_down and not over_key and not over_bar:
+                        if not key_open and on_field:show_keyboard()
+                        elif key_open and not on_field and time.monotonic()-opened_at>.4:hide_keyboard()
                     mouse_down=down
-                if key_open:x.XRaiseWindow(d,kw)
             else:mouse_down=False
+            if key_open:x.XRaiseWindow(d,kw)
             while x.XPending(d):
                 x.XNextEvent(d,C.byref(event))
                 if event.type==12:
