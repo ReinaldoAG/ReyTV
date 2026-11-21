@@ -198,6 +198,7 @@ def mouse_overlay():
     """Control X11 local de navegación. Proceso aislado; no HTTP ni permisos root."""
     import ctypes as C
     import time
+    import queue
     if not os.environ.get("DISPLAY") or os.getuid() == 0:
         return
     try:
@@ -242,11 +243,12 @@ def mouse_overlay():
         ("XGetWindowProperty",I,[P,U,U,L,L,I,U,C.POINTER(U),C.POINTER(I),C.POINTER(U),C.POINTER(U),C.POINTER(P)]),
         ("XGetClassHint",I,[P,U,C.POINTER(ClassHint)]),("XFree",I,[P]),
         ("XMapRaised",I,[P,U]),("XUnmapWindow",I,[P,U]),("XRaiseWindow",I,[P,U]),
-        ("XMoveWindow",I,[P,U,I,I]),("XDestroyWindow",I,[P,U]),
-        ("XPending",I,[P]),("XNextEvent",I,[P,C.POINTER(Event)]),
+        ("XMoveWindow",I,[P,U,I,I]),("XMoveResizeWindow",I,[P,U,I,I,C.c_uint,C.c_uint]),("XDestroyWindow",I,[P,U]),
+        ("XQueryPointer",I,[P,U,C.POINTER(U),C.POINTER(U),C.POINTER(I),C.POINTER(I),C.POINTER(I),C.POINTER(I),C.POINTER(C.c_uint)]),("XPending",I,[P]),("XNextEvent",I,[P,C.POINTER(Event)]),
         ("XSetForeground",I,[P,P,U]),("XFillRectangle",I,[P,U,P,I,I,C.c_uint,C.c_uint]),
         ("XDrawLine",I,[P,U,P,I,I,I,I]),("XDrawString",I,[P,U,P,I,I,C.c_char_p,I]),
         ("XFlush",I,[P]),("XStringToKeysym",U,[C.c_char_p]),("XKeysymToKeycode",C.c_ubyte,[P,U]),
+        ("XkbKeycodeToKeysym",U,[P,C.c_ubyte,I,I]),("XLoadFont",U,[P,C.c_char_p]),("XSetFont",I,[P,P,U]),("XUnloadFont",I,[P,U]),
     ]: fn(x,name,ret,*args)
     fake=fn(xt,"XTestFakeKeyEvent",I,P,C.c_uint,I,U)
     # Una ventana puede desaparecer mientras consultamos su título.
@@ -260,7 +262,7 @@ def mouse_overlay():
     active_atom=x.XInternAtom(d,b"_NET_ACTIVE_WINDOW",False)
     title_atom=x.XInternAtom(d,b"_NET_WM_NAME",False)
     legacy_atom=x.XInternAtom(d,b"WM_NAME",False)
-    width,height=148,44
+    width,height=234,44
     win=x.XCreateSimpleWindow(d,root,0,0,width,height,1,0x839DD0,0x162745)
     attrs=Attributes();attrs.override_redirect=1
     x.XChangeWindowAttributes(d,win,1<<9,C.byref(attrs))
@@ -268,6 +270,16 @@ def mouse_overlay():
     x.XSelectInput(d,win,(1<<15)|(1<<2)|(1<<3))
     gc=x.XCreateGC(d,win,0,None)
     event=Event()
+    # Una segunda ventana sin foco conserva la entrada en el campo original.
+    kw=x.XCreateSimpleWindow(d,root,0,0,820,260,1,0x839DD0,0x101e39)
+    x.XChangeWindowAttributes(d,kw,1<<9,C.byref(attrs))
+    x.XStoreName(d,kw,b"ReyTV external keyboard")
+    x.XSelectInput(d,kw,(1<<15)|(1<<2)|(1<<3))
+    kgc=x.XCreateGC(d,kw,0,None)
+    font=x.XLoadFont(d,b"-*-*-bold-r-normal--20-*-*-*-*-*-iso8859-1")
+    if font:x.XSetFont(d,kgc,font)
+    key_open=False;key_mode='lower';key_pressed=None;key_rect=(0,0,820,260);field_y=None
+    focus_events=queue.SimpleQueue();mouse_down=False
     mapped=False;pressed=None;last_window=0;last_size=None
     parent=os.getppid()
 
@@ -300,7 +312,7 @@ def mouse_overlay():
 
     def paint():
         x.XSetForeground(d,gc,0x162745);x.XFillRectangle(d,win,gc,0,0,width,height)
-        x.XSetForeground(d,gc,0x324D80);x.XDrawLine(d,win,gc,75,6,75,37)
+        x.XSetForeground(d,gc,0x324D80);x.XDrawLine(d,win,gc,75,6,75,37);x.XDrawLine(d,win,gc,148,6,148,37)
         x.XSetForeground(d,gc,0xE9F1FF)
         for dy in (0,1):
             x.XDrawLine(d,win,gc,12,22+dy,26,22+dy)
@@ -310,7 +322,10 @@ def mouse_overlay():
             x.XDrawLine(d,win,gc,92,14+dy,99,21+dy)
         x.XDrawLine(d,win,gc,87,21,87,30);x.XDrawLine(d,win,gc,97,21,97,30)
         x.XDrawLine(d,win,gc,87,30,97,30)
-        for text,xx in [(b"Atras",31),(b"Inicio",105)]:
+        for text,xx in [(b"Atras",31),(b"Inicio",105),(b"Teclado",180)]:
+            if xx==180:
+                x.XDrawLine(d,win,gc,158,15,174,15);x.XDrawLine(d,win,gc,158,29,174,29);x.XDrawLine(d,win,gc,158,15,158,29);x.XDrawLine(d,win,gc,174,15,174,29)
+                for xx2 in (162,166,170):x.XDrawLine(d,win,gc,xx2,19,xx2,22)
             x.XDrawString(d,win,gc,xx,26,text,len(text))
         x.XFlush(d)
 
@@ -322,6 +337,139 @@ def mouse_overlay():
         for code in reversed(codes):fake(d,code,False,0)
         x.XFlush(d)
 
+
+    # El monitor solo escucha cambios de foco y estados editables; jamás lee el texto.
+    # AT-SPI es opcional. Si no está disponible, el botón Teclado funciona igual.
+    def monitor_focus():
+        try:
+            import gi
+            gi.require_version("Atspi","2.0")
+            from gi.repository import Atspi, GLib, Gio
+            bus=Gio.bus_get_sync(Gio.BusType.SESSION,None)
+            try:
+                bus.call_sync("org.a11y.Bus","/org/a11y/bus","org.freedesktop.DBus.Properties","Set",
+                    GLib.Variant("(ssv)",("org.a11y.Status","IsEnabled",GLib.Variant("b",True))),
+                    None,Gio.DBusCallFlags.NONE,2000,None)
+            except Exception:
+                pass
+            Atspi.init()
+            def focused(event,*_):
+                try:
+                    obj=event.source
+                    app=obj.get_application()
+                    if not app or not any(name in (app.get_name() or "").lower() for name in ("chrome","chromium")):
+                        return
+                    if not event.detail1:
+                        focus_events.put((False,None));return
+                    states=obj.get_state_set()
+                    editable=bool(states and states.contains(Atspi.StateType.EDITABLE))
+                    cy=None
+                    if editable:
+                        try:
+                            rect=obj.get_component_iface().get_extents(Atspi.CoordType.SCREEN)
+                            cy=rect.y+rect.height/2
+                        except Exception:pass
+                    focus_events.put((editable,cy))
+                except Exception:
+                    pass
+            listener=Atspi.EventListener.new(focused,None)
+            if listener.register("object:state-changed:focused"):
+                GLib.MainLoop().run()
+        except Exception:
+            return
+
+    def geometry():
+        sw,sh=last_size or (x.XDisplayWidth(d,screen),x.XDisplayHeight(d,screen))
+        w=min(1000,max(310,int(sw*.76)));h=min(300,max(170,int(sh*.40)))
+        top=field_y is not None and field_y>sh*.61
+        return ((sw-w)//2,18 if top else max(0,sh-h-70),w,h)
+
+    def rows():
+        if key_mode=="symbol":
+            return ["1234567890","@._-/:+!?#","%&*=$()[];","SHIFT|ABC|SPACE|DEL|ENTER|DONE"]
+        if key_mode=="extra":
+            return ["<>,;:'\"\\|","^~{}!?_+-=","0123456789","SHIFT|ABC|SPACE|DEL|ENTER|DONE"]
+        chars=["qwertyuiop","asdfghjklñ","zxcvbnm"]
+        if key_mode=="upper":chars=[row.upper() for row in chars]
+        return chars+["SHIFT|123|SPACE|DEL|ENTER|DONE"]
+
+    def cells():
+        _,_,w,h=key_rect
+        result=[];gap=6;top=36;rh=max(24,(h-top-12)//4)
+        for index,row in enumerate(rows()):
+            keys=row.split("|") if index==3 else list(row)
+            cw=(w-24-gap*(len(keys)-1))//len(keys)
+            offset=(w-(cw*len(keys)+gap*(len(keys)-1)))//2
+            for i,key in enumerate(keys):
+                result.append((key,offset+i*(cw+gap),top+index*rh,cw,rh-gap))
+        return result
+
+    def key_at(px,py):
+        return next((key for key,l,t,w,h in cells() if l<=px<l+w and t<=py<t+h),None)
+
+    def paint_keyboard():
+        _,_,w,h=key_rect
+        x.XSetForeground(d,kgc,0x101e39);x.XFillRectangle(d,kw,kgc,0,0,w,h)
+        x.XSetForeground(d,kgc,0xB9CEF5)
+        label=b"TECLADO REYTV  -  Escribe en la aplicacion"
+        x.XDrawString(d,kw,kgc,14,24,label,len(label))
+        labels={"SHIFT":"Mayus","123":"123 / #","ABC":"ABC","SPACE":"Espacio","DEL":"Borrar","ENTER":"Intro / Ir","DONE":"Cerrar","MORE":"Simbolos"}
+        for key,l,t,cw,ch in cells():
+            x.XSetForeground(d,kgc,0x466EAD if key==key_pressed or key in ("ENTER","DONE") else 0x253D66)
+            x.XFillRectangle(d,kw,kgc,l,t,cw,ch)
+            x.XSetForeground(d,kgc,0xF0F6FF)
+            txt=labels.get(key,key).encode("latin-1")
+            x.XDrawString(d,kw,kgc,max(l+4,l+(cw-len(txt)*9)//2),t+ch//2+6,txt,len(txt))
+        x.XFlush(d)
+
+    def hide_keyboard():
+        nonlocal key_open,key_pressed
+        if key_open:x.XUnmapWindow(d,kw)
+        key_open=False;key_pressed=None
+
+    def show_keyboard():
+        nonlocal key_open,key_rect,key_mode
+        if not browser_window():return
+        if not key_open:key_mode="lower"
+        key_rect=geometry()
+        x.XMoveResizeWindow(d,kw,*key_rect)
+        x.XMapRaised(d,kw);key_open=True;paint_keyboard()
+
+    def key_event(key):
+        nonlocal key_mode
+        if key=="DONE":hide_keyboard();return
+        if key=="SHIFT":
+            key_mode={"lower":"upper","upper":"lower","symbol":"extra","extra":"symbol"}[key_mode];paint_keyboard();return
+        if key=="123":key_mode="symbol";paint_keyboard();return
+        if key=="ABC":key_mode="lower";paint_keyboard();return
+        if not browser_window():hide_keyboard();return
+        special={"SPACE":b"space","DEL":b"BackSpace","ENTER":b"Return"}
+        if key in special:
+            code=x.XKeysymToKeycode(d,x.XStringToKeysym(special[key]))
+            if code:fake(d,code,True,0);fake(d,code,False,0)
+        else:
+            # Usar el mapa XKB existente (base, Shift, AltGr), sin tocar el portapapeles.
+            sym=ord(key)
+            shift=x.XKeysymToKeycode(d,x.XStringToKeysym(b"Shift_L"))
+            altgr=x.XKeysymToKeycode(d,x.XStringToKeysym(b"ISO_Level3_Shift"))
+            match=None
+            for level in range(4):
+                if level&1 and not shift or level&2 and not altgr:continue
+                for code in range(8,256):
+                    if x.XkbKeycodeToKeysym(d,code,0,level)==sym:
+                        match=(code,level);break
+                if match:break
+            if match:
+                code,level=match
+                modifiers=([altgr] if level&2 else [])+([shift] if level&1 else [])
+                for mod in modifiers:fake(d,mod,True,0)
+                fake(d,code,True,0);fake(d,code,False,0)
+                for mod in reversed(modifiers):fake(d,mod,False,0)
+        x.XFlush(d)
+        if key=="ENTER":hide_keyboard()
+
+    threading.Thread(target=monitor_focus,daemon=True).start()
+
     try:
         while os.getppid()==parent:
             active=browser_window()
@@ -329,26 +477,61 @@ def mouse_overlay():
             if size!=last_size:
                 x.XMoveWindow(d,win,max(0,size[0]-width-18),max(0,size[1]-height-18))
                 last_size=size
+                if key_open:show_keyboard()
             if active:
                 if not mapped:
                     x.XMapRaised(d,win);mapped=True;paint()
                 else:x.XRaiseWindow(d,win)
             elif mapped:
                 x.XUnmapWindow(d,win);mapped=False;pressed=None
-            if active!=last_window:pressed=None;last_window=active
+            if active!=last_window:pressed=None;hide_keyboard();last_window=active
+            latest=None
+            while not focus_events.empty():latest=focus_events.get_nowait()
+            if latest is not None and active:
+                editable,field_y=latest
+                if editable:show_keyboard()
+                else:hide_keyboard()
+            if key_open:
+                # Un clic fuera deja libre la página para Continuar/Buscar.
+                rr=U();ch=U();rx=I();ry=I();wx=I();wy=I();mask=C.c_uint()
+                if x.XQueryPointer(d,root,C.byref(rr),C.byref(ch),C.byref(rx),C.byref(ry),C.byref(wx),C.byref(wy),C.byref(mask)):
+                    down=bool(mask.value&(1<<8));kx,ky,ww,hh=key_rect
+                    # No cerrar por clic en el teclado o en su barra de control.
+                    over_key=kx<=rx.value<kx+ww+2 and ky<=ry.value<ky+hh+2
+                    over_bar=size[0]-width-18<=rx.value<=size[0]-16 and size[1]-height-18<=ry.value<=size[1]-16
+                    if down and not mouse_down and not over_key and not over_bar:hide_keyboard()
+                    mouse_down=down
+                if key_open:x.XRaiseWindow(d,kw)
+            else:mouse_down=False
             while x.XPending(d):
                 x.XNextEvent(d,C.byref(event))
-                if event.type==12 and mapped:paint()
+                if event.type==12:
+                    # XExpose.window ocupa el mismo offset que XButtonEvent.window.
+                    if event.button.window==kw and key_open:paint_keyboard()
+                    elif event.button.window==win and mapped:paint()
                 elif event.type==4 and event.button.button==1:
-                    pressed=(event.button.x>=76) if mapped and active else None
+                    if event.button.window==kw and key_open:
+                        key_pressed=key_at(event.button.x,event.button.y);paint_keyboard()
+                    else:pressed=min(2,event.button.x//75) if mapped and active else None
                 elif event.type==5 and event.button.button==1:
                     b=event.button
-                    if pressed is not None and mapped and 0<=b.x<width and 0<=b.y<height and pressed==(b.x>=76) and browser_window()==active:
-                        send_keys(pressed)
+                    if b.window==kw and key_open:
+                        key=key_at(b.x,b.y)
+                        if key and key==key_pressed and browser_window()==active:key_event(key)
+                        key_pressed=None
+                        if key_open:paint_keyboard()
+                    elif pressed is not None and mapped and 0<=b.x<width and 0<=b.y<height and pressed==min(2,b.x//75) and browser_window()==active:
+                        if pressed==2:
+                            if key_open:hide_keyboard()
+                            else:show_keyboard()
+                        else:
+                            hide_keyboard();send_keys(pressed==1)
                     pressed=None
             x.XFlush(d)
             time.sleep(.05)
     finally:
+        if font:x.XUnloadFont(d,font)
+        x.XFreeGC(d,kgc);x.XDestroyWindow(d,kw)
         x.XFreeGC(d,gc);x.XDestroyWindow(d,win);x.XCloseDisplay(d)
 
 

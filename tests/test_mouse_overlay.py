@@ -13,9 +13,9 @@ TITLE = "ReyTV mouse navigation"
 def cmd(*args):
     return subprocess.check_output(args, text=True, stderr=subprocess.DEVNULL).strip()
 
-def overlay_id():
+def overlay_id(title=TITLE):
     try:
-        return cmd("xdotool", "search", "--onlyvisible", "--name", "^"+TITLE+"$").splitlines()[0]
+        return cmd("xdotool", "search", "--onlyvisible", "--name", "^"+title+"$").splitlines()[0]
     except (subprocess.CalledProcessError, IndexError):
         return None
 
@@ -44,7 +44,7 @@ def main():
             page = browser.new_page(no_viewport=True)
             def route(r):
                 title = "ReyTV — Tu pantalla, tus reglas" if "/index.html" in r.request.url else "Servicio externo"
-                r.fulfill(body="<title>"+title+"</title><h1>"+title+"</h1><script>window.homePressed=false;addEventListener('keydown',e=>{if(e.key==='F8')window.homePressed=true;});</script>", content_type="text/html; charset=utf-8")
+                r.fulfill(body="<title>"+title+"</title><h1>"+title+"</h1><input id=entry aria-label=Email><script>window.homePressed=false;addEventListener('keydown',e=>{if(e.key==='F8')window.homePressed=true;});</script>", content_type="text/html; charset=utf-8")
             page.route("**/*", route)
             page.goto("http://127.0.0.1:18763/index.html")
             page.bring_to_front()
@@ -59,6 +59,34 @@ def main():
             cmd("xdotool","mousemove","--window",window,"30","20","click","1")
             page.wait_for_url("**/first")
             assert cmd("xdotool","getactivewindow")==active_before, "No tomar foco"
+            # Teclado externo sin alterar el foco, con escritura real en un formulario.
+            page.locator("#entry").click()
+            window=wait_until(page,overlay_id)
+            cmd("xdotool","mousemove","--window",window,"190","20","click","1")
+            keyboard=wait_until(page,lambda:overlay_id("ReyTV external keyboard"))
+            def key(row,col,count):
+                info=cmd("xdotool","getwindowgeometry","--shell",keyboard)
+                vals=dict(line.split("=",1) for line in info.splitlines() if "=" in line)
+                w,h=int(vals["WIDTH"]),int(vals["HEIGHT"])
+                gap=6;cw=(w-24-gap*(count-1))//count
+                start=(w-(cw*count+gap*(count-1)))//2
+                rh=max(24,(h-36-12)//4)
+                cmd("xdotool","mousemove","--window",keyboard,str(start+col*(cw+gap)+cw//2),str(36+row*rh+(rh-gap)//2),"click","1")
+                page.wait_for_timeout(130)
+            key(1,0,10)
+            key(3,0,6)
+            key(0,1,10)
+            key(3,1,6)
+            key(0,1,10)
+            key(1,0,10)
+            page.wait_for_function("document.querySelector('#entry').value === 'aW2@'")
+            assert cmd("xdotool","getactivewindow")==active_before
+            key(3,5,6)
+            wait_until(page,lambda:not overlay_id("ReyTV external keyboard"))
+            cmd("xdotool","mousemove","--window",window,"190","20","click","1")
+            keyboard=wait_until(page,lambda:overlay_id("ReyTV external keyboard"))
+            key(3,4,6)
+            wait_until(page,lambda:not overlay_id("ReyTV external keyboard"))
             window=wait_until(page,overlay_id)
             cmd("xdotool","mousemove","--window",window,"110","20","click","1")
             wait_until(page, marker.exists)

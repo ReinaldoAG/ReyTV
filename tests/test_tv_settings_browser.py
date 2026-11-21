@@ -4,7 +4,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "index.html").read_text()
-STATUS = {"ready": True, "token": "test", "version": "0.4.5", "full_update": True}
+STATUS = {"ready": True, "token": "test", "version": "0.4.6", "full_update": True}
 NATIVE = {
     "wifi": {"available": True, "enabled": True, "connected": "Red de prueba",
              "ipv4": "192.168.1.20", "interface": "wlan0",
@@ -53,7 +53,7 @@ def test(browser, width, height):
     page.keyboard.press("Escape")
     page.keyboard.press("ArrowDown")
     page.keyboard.press("Enter")
-    assert page.locator("#settings-version").inner_text() == "0.4.5"
+    assert page.locator("#settings-version").inner_text() == "0.4.6"
     page.locator("#check-update").click()
     page.wait_for_function("!document.getElementById('apply-update').disabled")
     assert not page.locator("#native-settings").is_visible()
