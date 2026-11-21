@@ -1,0 +1,1 @@
+curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-enable-updates.sh -o /tmp/reytv-setup.sh && bash /tmp/reytv-setup.sh
