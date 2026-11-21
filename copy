@@ -1,24 +1,12 @@
-# REYTV - REPARAR LOS REPOSITORIOS DE DEBIAN 13
-# Copia solo una línea de comando por vez. No copies comentarios (#).
-# La hora debe ser correcta antes de ejecutar APT.
+# REYTV 0.3 - ACTIVAR MODO TV REAL
+# Copia solo el comando de la línea siguiente, sin los comentarios.
+# Se ejecuta desde tu escritorio actual; pide tu contraseña sudo una vez.
+curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
 
-# PASO 1 - Inspeccionar la configuración actual, sin cambiar nada.
-date; cat /etc/os-release; echo "=== FUENTES APT ==="; grep -HnE '^[[:space:]]*(deb[[:space:]]|Types:|URIs:|Suites:|Enabled:|Components:|Signed-By:)' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null; echo "=== PAQUETES ==="; apt-cache policy systemd-timesyncd; df -h /
-
-# Si no aparecen fuentes activas de Internet, y VERSION_CODENAME=trixie,
-# puedes continuar al PASO 2. Si aparecen fuentes de Internet, envía foto antes.
-# PASO 2 - Añadir fuentes oficiales, conservando los archivos existentes.
-test ! -e /etc/apt/sources.list.d/reytv-debian.sources && printf '%s\n' 'Types: deb' 'URIs: https://deb.debian.org/debian' 'Suites: trixie trixie-updates' 'Components: main contrib non-free-firmware' 'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' '' 'Types: deb' 'URIs: https://security.debian.org/debian-security' 'Suites: trixie-security' 'Components: main contrib non-free-firmware' 'Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg' | sudo tee /etc/apt/sources.list.d/reytv-debian.sources
-
-# PASO 3 - Descargar los índices de paquetes y comprobar que el servicio existe.
-sudo apt-get update --error-on=any && apt-cache policy systemd-timesyncd
-
-# PASO 4 - Solo si hay candidato válido y no hay errores.
-sudo apt-get install systemd-timesyncd
-
-# PASO 5 - Activar sincronización automática y verificar.
-sudo timedatectl set-ntp true
-timedatectl status
-
-# Si APT propone eliminar paquetes importantes, o muestra un error, detenerse y enviar foto.
-# No realizar full-upgrade todavía ni desactivar TLS o las firmas de APT.
+# Cuando diga MODO TV INSTALADO, reinicia normalmente.
+# F8 vuelve a Inicio desde cualquier servicio. F2 marca favoritos.
+# Ctrl+Alt+Esc sale al selector SDDM. LXQt sigue disponible.
+# RESCATE (solo en caso de fallo): Ctrl+Alt+F3, usuario reytv y tu contraseña.
+# Ejecuta los dos comandos siguientes, uno a la vez:
+sudo reytv-tv-disable
+sudo reboot

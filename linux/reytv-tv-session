@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Sesión X11 independiente: no carga LXQt ni su panel/escritorio.
+set -eo pipefail
+if [ "$(id -u)" = 0 ]; then exit 1; fi
+BIN="$HOME/.local/bin"
+DATA=$(printenv XDG_DATA_HOME || true); [ -n "$DATA" ] || DATA="$HOME/.local/share"
+STATE=$(printenv XDG_STATE_HOME || true); [ -n "$STATE" ] || STATE="$HOME/.local/state"
+CONF=$(printenv XDG_CONFIG_HOME || true); [ -n "$CONF" ] || CONF="$HOME/.config"
+APP="$DATA/reytv"
+STATE="$STATE/reytv"
+PROFILE="$CONF/reytv/chrome-profile"
+URL='http://127.0.0.1:18763/index.html?tv=1'
+if [ "$1" = "--home" ] 2>/dev/null; then
+  if [[ "$REYTV_TV_PID" =~ ^[0-9]+$ ]]; then kill -USR1 "$REYTV_TV_PID"; fi
+  exit
+fi
+if [ "$1" = "--exit" ] 2>/dev/null; then
+  if [[ "$REYTV_TV_PID" =~ ^[0-9]+$ ]]; then kill -TERM "$REYTV_TV_PID"; fi
+  exit
+fi
+[ -s "$APP/index.html" ] && [ -s "$BIN/reytv-server.py" ] || { echo "Falta la instalación de ReyTV."; exit 1; }
+browser=''
+for name in google-chrome-stable google-chrome chromium chromium-browser; do
+  if command -v "$name" >/dev/null; then browser=$(command -v "$name"); break; fi
+done
+[ -n "$browser" ] || exit 1
+mkdir -p "$STATE" "$PROFILE"
+exec >>"$STATE/tv-session.log" 2>&1
+export REYTV_TV_PID=$$
+export XDG_CURRENT_DESKTOP=ReyTV
+export XDG_SESSION_DESKTOP=reytv-tv
+# Exponer el DISPLAY a los servicios de usuario, sin iniciar LXQt.
+dbus-update-activation-environment --systemd DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP 2>/dev/null || true
+xsetroot -solid '#080a12' || true
+xset s off -dpms || true
+openbox --config-file /usr/local/share/reytv-tv/openbox.xml &
+wm=$!
+unclutter -idle 1 -root -noevents &
+cursor=$!
+server=''
+child=''
+want_home=0
+terminate_child() {
+  if [ -n "$child" ]; then kill -TERM -- "-$child" 2>/dev/null || true; fi
+}
+cleanup() {
+  terminate_child
+  for pid in "$server" "$cursor" "$wm"; do
+    if [ -n "$pid" ]; then kill "$pid" 2>/dev/null || true; fi
+  done
+}
+trap cleanup EXIT
+trap 'want_home=1; terminate_child' USR1
+trap 'exit 0' TERM INT HUP
+# Un único backend local; nunca exponerlo en la red.
+if ! curl -fsS --max-time 1 http://127.0.0.1:18763/api/status >/dev/null 2>&1; then
+  python3 "$BIN/reytv-server.py" --app-dir "$APP" --state-dir "$STATE" --bin-dir "$BIN" &
+  server=$!
+fi
+ready=0
+for i in $(seq 1 40); do
+  if curl -fsS --max-time 1 http://127.0.0.1:18763/api/status >/dev/null 2>&1; then ready=1; break; fi
+  sleep .25
+done
+[ "$ready" = 1 ] || { echo 'Backend no disponible; regresando al acceso de sesión.'; exit 1; }
+failures=0
+while kill -0 "$wm" 2>/dev/null; do
+  want_home=0
+  started=$(date +%s)
+  # Conserva el perfil existente; no desactiva el sandbox ni TLS.
+  setsid "$browser" --user-data-dir="$PROFILE" --kiosk --no-first-run --no-default-browser-check --disable-session-crashed-bubble --ozone-platform=x11 "$URL" &
+  child=$!
+  wait "$child" || true
+  # wait puede interrumpirse por USR1. Esperar la salida y limpiar el grupo.
+  terminate_child
+  for i in $(seq 1 20); do
+    if ! kill -0 -- "-$child" 2>/dev/null; then break; fi
+    sleep .1
+  done
+  kill -KILL -- "-$child" 2>/dev/null || true
+  wait "$child" 2>/dev/null || true
+  child=''
+  now=$(date +%s)
+  if [ "$want_home" = 0 ] && [ "$((now-started))" -lt 4 ]; then
+    failures=$((failures+1))
+  else
+    failures=0
+  fi
+  if [ "$failures" -ge 3 ]; then echo 'Navegador no inicia; regresar a SDDM.'; exit 1; fi
+  sleep .3
+done

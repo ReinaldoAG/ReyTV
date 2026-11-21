@@ -110,3 +110,9 @@ La compatibilidad Bluetooth con tu mando Sony PS3 Blu-ray queda para la siguient
 - `tests/iso-smoke.sh` y `tests/update-smoke.sh`: pruebas de consistencia.
 
 Proyecto personal sin afiliación con los servicios de streaming mencionados.
+
+## Modo TV dedicado (0.3, transición experimental)
+
+Desde una instalación 0.2.2 con reloj y APT funcionando, sigue [copy](copy). La transición crea una sesión X11 independiente de LXQt con inicio automático SDDM, Openbox mínimo, Chromium/Chrome en modo kiosco, cursor oculto al quedar quieto y reinicio supervisado. F8 (o tecla multimedia Home) vuelve a Inicio cerrando y reabriendo el navegador con el mismo perfil; F2 marca favoritos. Las aplicaciones web externas conservan sus propios controles y DRM: su navegación exclusivamente por mando todavía no está garantizada.
+
+La sesión es reversible: Ctrl+Alt+Esc muestra SDDM; puedes elegir LXQt. Si falla el arranque: Ctrl+Alt+F3, entrar con tu usuario, ejecutar sudo reytv-tv-disable y sudo reboot. Se restaura la configuración previa de SDDM. No se elimina LXQt ni el perfil. Los cambios en HTML siguen llegando por el actualizador existente; los cambios de sesión nativa todavía requieren un instalador separado. No se ha validado este modo en el CN60 físico.

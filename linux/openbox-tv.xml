@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <focus><focusNew>yes</focusNew><followMouse>no</followMouse></focus>
+  <theme><name>Clearlooks</name></theme>
+  <desktops><number>1</number><firstdesk>1</firstdesk></desktops>
+  <keyboard>
+    <keybind key="F8"><action name="Execute"><command>/usr/local/bin/reytv-tv-session --home</command></action></keybind>
+    <keybind key="XF86HomePage"><action name="Execute"><command>/usr/local/bin/reytv-tv-session --home</command></action></keybind>
+    <keybind key="C-A-Escape"><action name="Execute"><command>/usr/local/bin/reytv-tv-session --exit</command></action></keybind>
+  </keyboard>
+  <mouse/>
+  <applications><application class="*"><decor>no</decor><maximized>yes</maximized></application></applications>
+</openbox_config>

@@ -105,6 +105,20 @@
     @media(max-width:960px){.shell{padding:20px 25px 50px}.lefthead{gap:20px}.hero{grid-template-columns:1fr .72fr}.grid{grid-template-columns:repeat(3,minmax(0,1fr));}.orb{left:5%;}.nav button{padding:10px;}}
     @media(max-width:650px){.topbar{flex-wrap:wrap}.nav{order:3;width:100%;justify-content:space-between}.nav button{flex:1}.righthead{margin-left:auto}.hero{grid-template-columns:1fr;min-height:0}.hero-copy{padding:32px}.hero-art{min-height:190px}.orb{width:265px;height:265px;left:35%;top:-35%}.orb-ring{width:300px;height:160px;left:20%}.art-label{right:10%;bottom:12%}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.app-card,.utility-card{min-height:145px;padding:15px}.app-card::after{right:11px}.footer{display:block}.footer>span{display:block;margin:10px 0}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.app-card{transition:none}}
+    /* Sesión TV: pantalla de aplicaciones directa, sin portada promocional. */
+    .tv-mode .shell { max-width:1600px; padding:clamp(18px,3.6vh,42px) clamp(24px,5vw,80px); }
+    .tv-mode .hero,.tv-mode .footer { display:none !important; }
+    .tv-mode .section-title { margin:clamp(18px,4vh,38px) 0 18px; }
+    .tv-mode .section-title h2 { font-size:clamp(22px,3vw,36px); }
+    .tv-mode .grid { grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(12px,1.7vw,24px); }
+    .tv-mode .app-card,.tv-mode .utility-card { min-height:clamp(95px,23vh,225px); }
+    .tv-mode .card-title { font-size:clamp(17px,2.5vw,37px); }
+    .tv-mode .app-card:focus { outline:4px solid #fff; outline-offset:3px; transform:translateY(-3px); filter:brightness(1.13); }
+    .tv-mode .app-card .external,.tv-mode .card-top { display:none; }
+    .tv-mode .app-card { align-items:center; }
+    .tv-mode .settings-panel { max-width:980px; }
+    .tv-mode .nav button { padding:12px clamp(10px,1.3vw,20px); }
+    @media(max-width:800px) { .tv-mode .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
   </style>
 </head>
 <body>
@@ -124,7 +138,7 @@
 
     <section id="hero" class="hero" aria-label="Presentación">
       <div class="hero-copy"><span class="eyebrow">Tu espacio de entretenimiento</span><h1>Tu pantalla.<br /><span>Tus reglas.</span></h1><p>Todo lo que te gusta, en un solo lugar. Elige un servicio con las flechas del teclado y presiona Enter para abrirlo.</p><button class="primary" id="watch" type="button">▶ &nbsp; Abrir YouTube</button></div>
-      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>ACTUALIZACIÓN POR INTERNET</small>ReyTV · 0.2.2</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orb-ring"></div><div class="orb"></div><div class="art-label"><small>MODO TV</small>ReyTV · 0.3.0</div></div>
     </section>
 
     <section id="content" aria-live="polite">
@@ -143,6 +157,8 @@
   <script>
   (() => {
     'use strict';
+    const TV_MODE = new URLSearchParams(location.search).get('tv') === '1';
+    document.body.classList.toggle('tv-mode', TV_MODE);
     const STORAGE_KEY = 'reytv-v1';
     const builtIn = [
       { id:'youtube', name:'YouTube', url:'https://www.youtube.com/', subtitle:'Videos, música y mucho más', c1:'#70231f',c2:'#200d16', glow:'#fb574e',badge:'VIDEOS' },
@@ -174,17 +190,17 @@
     clockTick(); setInterval(clockTick,30000);
     function makeAppCard(a) {
       const wrap = document.createElement('div'); wrap.className='app-wrap';
-      const anchor = document.createElement('a'); anchor.className='app-card'; anchor.href=a.url; anchor.target='_blank'; anchor.rel='noopener noreferrer';
+      const anchor = document.createElement('a'); anchor.className='app-card'; anchor.href=a.url; anchor.target=TV_MODE?'_self':'_blank'; anchor.rel='noopener noreferrer';
       anchor.style.setProperty('--tile1',a.c1||'#30436b'); anchor.style.setProperty('--tile2',a.c2||'#151b2f'); anchor.style.setProperty('--glow',a.glow||'#587ac8');
-      anchor.setAttribute('aria-label',`Abrir ${a.name} en otra pestaña`);
+      anchor.setAttribute('aria-label',`Abrir ${a.name}`);
       anchor.innerHTML=`<span class="card-top">${safeText(a.badge||'PERSONALIZADA')}</span><span><span class="card-title">${safeText(a.name)}</span><span class="card-sub">${safeText(a.subtitle||'Acceso web')}</span></span><span class="external" aria-hidden="true">↗</span>`;
       wrap.appendChild(anchor);
-      const fav = document.createElement('button'); fav.className='fav-btn';fav.type='button';fav.dataset.appId=a.id;fav.textContent=favorites.has(a.id)?'★':'☆';fav.title=`${favorites.has(a.id)?'Quitar de':'Añadir a'} favoritos: ${a.name}`;fav.setAttribute('aria-label',fav.title);fav.setAttribute('aria-pressed',String(favorites.has(a.id)));
+      const fav = document.createElement('button'); fav.className='fav-btn';fav.type='button';if(TV_MODE)fav.tabIndex=-1;fav.dataset.appId=a.id;fav.textContent=favorites.has(a.id)?'★':'☆';fav.title=`${favorites.has(a.id)?'Quitar de':'Añadir a'} favoritos: ${a.name}`;fav.setAttribute('aria-label',fav.title);fav.setAttribute('aria-pressed',String(favorites.has(a.id)));
       fav.addEventListener('click',()=>{
         favorites.has(a.id) ? favorites.delete(a.id) : favorites.add(a.id);
         save();render();
         const replacement=[...document.querySelectorAll('.fav-btn')].find(btn=>btn.dataset.appId===a.id);
-        (replacement||document.querySelector('.app-card')||document.querySelector('[data-page="aplicaciones"]'))?.focus();
+        ((TV_MODE?replacement?.parentElement.querySelector('.app-card'):replacement)||document.querySelector('.app-card')||document.querySelector('[data-page="aplicaciones"]'))?.focus();
       });
       wrap.appendChild(fav);
       return wrap;
@@ -193,7 +209,7 @@
       const b=document.createElement('button'); b.type='button';b.className='utility-card';b.innerHTML='<span class="utility-icon">＋</span><span><strong>Añadir servicio</strong><small>Crea un acceso a otra página web</small></span>';b.addEventListener('click',()=>openModal('add'));return b;
     }
     function render(){
-      const sections={inicio:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','ReyTV']};
+      const sections={inicio:TV_MODE?['Tus aplicaciones','F8 · Inicio']:['Para ver hoy','Tu selección'],aplicaciones:['Todas las aplicaciones','Servicios web'],favoritos:['Tus favoritos','Elegidas por ti'],ajustes:['Configuración','ReyTV']};
       const [title,chip]=sections[page]; $('section-heading').textContent=title;$('section-chip').textContent=chip;
       $('hero').classList.toggle('hidden',page!=='inicio');$('searchrow').classList.toggle('hidden',page!=='aplicaciones');
       document.querySelectorAll('[data-page]').forEach(btn=>{if(btn.dataset.page===page)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');});
@@ -204,9 +220,10 @@
         panel.innerHTML='<h2>Personaliza tu experiencia</h2><p>ReyTV es una pantalla de inicio para servicios web. No instala aplicaciones Android ni garantiza que todas las plataformas admitan navegación completa sin mouse.</p><ul><li>Flechas + Enter: mover el foco y seleccionar</li><li>Escape / Retroceso: volver al inicio</li><li>Barra /: abrir la búsqueda</li><li>Ctrl+W: cerrar la pestaña del servicio y regresar a ReyTV</li><li>F11: alternar pantalla completa</li></ul><p>Los favoritos y accesos agregados se guardan localmente en este navegador.</p>';
         const btn=document.createElement('button');btn.className='secondary';btn.type='button';btn.textContent='Ver ayuda del teclado';btn.addEventListener('click',()=>openModal('help'));panel.appendChild(btn);
         const update=document.createElement('div');update.className='update-box';update.innerHTML='<h3>Actualizaciones de ReyTV</h3><p>Actualiza el menú sin pendrive, sin reinstalar Debian y sin perder favoritos.</p><div class="update-actions"><button class="primary" id="check-update" type="button" disabled>Buscar actualizaciones</button><button class="secondary" id="apply-update" type="button" disabled>Actualizar ahora</button><button class="secondary" id="undo-update" type="button" disabled>Volver a la versión anterior</button></div><p id="update-message" class="update-message" role="status" aria-live="polite">Comprobando el actualizador...</p><p>Las actualizaciones de seguridad de Debian se gestionan por separado.</p>';panel.appendChild(update);
+        if(TV_MODE){const hint=document.createElement('p');hint.textContent='Modo TV: F8 vuelve al inicio desde cualquier servicio; F2 marca la aplicación seleccionada como favorita. Ctrl + Alt + Esc sale al acceso de mantenimiento.';panel.prepend(hint);}
         $('content').appendChild(panel);setupUpdates();return;
       }
-      const list=allApps().filter(a=>(page==='aplicaciones'||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));
+      const list=allApps().filter(a=>(page==='aplicaciones'||(TV_MODE&&page==='inicio')||favorites.has(a.id)) && (page!=='aplicaciones'||`${a.name} ${a.subtitle||''}`.toLowerCase().includes(searchText)));
       if(list.length===0){const empty=document.createElement('p');empty.className='empty';empty.textContent=page==='favoritos'?'Todavía no tienes favoritos. Ve a Aplicaciones y marca alguna estrella.':'No hay resultados. Prueba con otra búsqueda.';grid.appendChild(empty);}
       for(const a of list)grid.appendChild(makeAppCard(a));
       if(page==='aplicaciones')grid.appendChild(addCard());
@@ -274,7 +291,7 @@
     function closeModal(){$('modal').classList.add('hidden');$('modal').removeEventListener('click',overlayClick);modalType='';$('modal-content').replaceChildren();if(focusBeforeModal?.isConnected)focusBeforeModal.focus();}
     function isTextEntry(el){return !!el && (el.matches?.('input,textarea,select')||el.isContentEditable);}
     function moveFocus(direction){
-      const nodes=[...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled])')].filter(node=>node.getClientRects().length>0 && !node.closest('.hidden'));
+      const nodes=[...document.querySelectorAll('a[href],button:not([disabled]),input:not([disabled])')].filter(node=>node.getClientRects().length>0 && !node.closest('.hidden') && !(TV_MODE&&node.classList.contains('fav-btn')));
       if(nodes.length===0)return;
       const active=document.activeElement; const source=nodes.includes(active)?active:nodes[0];
       if(!nodes.includes(active)){source.focus({preventScroll:true});source.scrollIntoView({block:'nearest',inline:'nearest'});return;}
@@ -287,6 +304,7 @@
     }
     document.addEventListener('keydown',event=>{
       const inputMode=isTextEntry(document.activeElement);
+      if(TV_MODE&&event.key==='F2'&&!modalType&&!inputMode){event.preventDefault();document.activeElement?.closest('.app-wrap')?.querySelector('.fav-btn')?.click();return;}
       if(event.key==='Escape'){
         if(modalType){event.preventDefault();closeModal();return;}
         if(inputMode){document.activeElement.blur();return;}
@@ -297,6 +315,7 @@
       if(event.key.startsWith('Arrow')&&!inputMode){event.preventDefault();if(modalType){const modalNodes=[...$('modal').querySelectorAll('button,input')];const pos=modalNodes.indexOf(document.activeElement);const step=(event.key==='ArrowRight'||event.key==='ArrowDown')?1:-1;modalNodes[(pos+step+modalNodes.length)%modalNodes.length]?.focus();}else moveFocus(event.key);}
     });
     render();
+    if(TV_MODE)requestAnimationFrame(()=>document.querySelector('.app-card')?.focus({preventScroll:true}));
   })();
   </script>
 </body>

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=ReyTV (Modo TV)
+Comment=Sesión de televisión dedicada
+Exec=/usr/local/bin/reytv-tv-session
+TryExec=/usr/local/bin/reytv-tv-session
+Type=Application
+DesktopNames=ReyTV

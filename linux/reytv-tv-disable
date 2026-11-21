@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Restablece la configuración SDDM anterior; no elimina datos del usuario.
+set -e
+[ "$(id -u)" = 0 ] || { echo 'Ejecuta con sudo.'; exit 1; }
+backup=/var/lib/reytv-tv
+if [ -f "$backup/active" ]; then
+  if [ -f "$backup/had-sddm-conf" ]; then
+    cp -a "$backup/sddm.conf.original" /etc/sddm.conf
+  else
+    rm -f /etc/sddm.conf
+  fi
+  rm -f "$backup/active"
+fi
+rm -f /usr/share/xsessions/reytv-tv.desktop
+echo 'Modo TV desactivado. Reinicia para volver al escritorio o al selector de sesión.'
