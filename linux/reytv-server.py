@@ -24,6 +24,108 @@ REPOSITORY = "https://github.com/ReinaldoAG/ReyTV.git"
 BRANCH = "main"
 
 
+
+def cpu_ticks(path=Path("/proc/stat")):
+    values = [int(v) for v in path.read_text().splitlines()[0].split()[1:9]]
+    if len(values) < 5:
+        raise ValueError("Invalid CPU counters")
+    return sum(values), values[3] + values[4]
+
+
+def cpu_percent(first, second):
+    total = second[0] - first[0]
+    idle = second[1] - first[1]
+    return round(max(0, min(100, 100 * (total-idle)/total))) if total > 0 else None
+
+
+def memory_snapshot(path=Path("/proc/meminfo")):
+    values = {}
+    for line in path.read_text().splitlines():
+        key, _, value = line.partition(":")
+        if key in ("MemTotal", "MemAvailable", "SwapTotal", "SwapFree"):
+            values[key] = int(value.split()[0])
+    total = values.get("MemTotal", 0)
+    available = values.get("MemAvailable")
+    used = max(0, total-available) if available is not None and total else None
+    return {"percent": min(100, round(100*used/total)) if used is not None else None,
+            "total_mib": round(total/1024), "used_mib": round(used/1024) if used is not None else None,
+            "swap_mib": round(values.get("SwapTotal",0)/1024),
+            "swap_used_mib": round(max(0, values.get("SwapTotal",0)-values.get("SwapFree",0))/1024)}
+
+
+def tv_browser():
+    # Never return command lines or browsing history over HTTP.
+    config = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home()/".config")
+    profile = os.fsencode("--user-data-dir="+str(config/"reytv/chrome-profile"))
+    for proc in Path("/proc").iterdir():
+        if not proc.name.isdigit():
+            continue
+        try:
+            if proc.stat().st_uid != os.getuid():
+                continue
+            args = (proc/"cmdline").read_bytes().split(b"\0")
+            if profile not in args or any(arg.startswith(b"--type=") for arg in args):
+                continue
+            exe = os.readlink(proc/"exe")
+            if exe.startswith("/opt/google/chrome/"):
+                return "Google Chrome"
+            if "chromium" in exe.lower():
+                return "Chromium"
+        except OSError:
+            continue
+    return "No verificado"
+
+
+def vaapi_snapshot():
+    import shutil
+    nodes = sorted(Path("/dev/dri").glob("renderD*"))
+    drivers = []
+    for node in nodes:
+        try:
+            drivers.append((Path("/sys/class/drm")/node.name/"device/driver").resolve(strict=True).name)
+        except OSError:
+            continue
+    installed = [name for name in ("i965", "iHD") if any(
+        Path("/usr/lib").glob("*/dri/"+name+"_drv_video.so"))]
+    result = {"driver": ", ".join(sorted(set(drivers))) or "No detectado",
+              "va_drivers": installed, "status": "No comprobado", "h264": None}
+    if not nodes:
+        result["status"] = "Sin dispositivo de renderizado"
+    elif not shutil.which("vainfo"):
+        result["status"] = "Falta vainfo"
+    else:
+        # Explicit local device, bounded execution, no privileged action.
+        try:
+            env = dict(os.environ, LC_ALL="C")
+            run = subprocess.run(["vainfo","--display","drm","--device",str(nodes[0])],
+                                 capture_output=True,text=True,timeout=4,env=env)
+            if run.returncode == 0:
+                result["status"] = "VA-API disponible"
+                result["h264"] = bool(re.search(r"VAProfileH264\w*\s*:\s*VAEntrypointVLD",run.stdout))
+            else:
+                result["status"] = "VA-API no se pudo iniciar"
+        except (OSError, subprocess.TimeoutExpired):
+            result["status"] = "Diagnóstico no disponible"
+    return result
+
+
+def performance_snapshot():
+    import shutil
+    import time
+    first = cpu_ticks()
+    memory = memory_snapshot()
+    disk = shutil.disk_usage("/")
+    time.sleep(.20)
+    cpu = cpu_percent(first,cpu_ticks())
+    try:
+        zram = any(line.split()[0].startswith("/dev/zram") for line in Path("/proc/swaps").read_text().splitlines()[1:] if line.split())
+    except OSError:
+        zram = None
+    return {"cpu_percent":cpu,"memory":memory,
+            "disk":{"percent":round(100*disk.used/disk.total),"free_gib":round(disk.free/1024**3,1)},
+            "browser":tv_browser(),"video":vaapi_snapshot(),"zram":zram}
+
+
 class ReyTVServer(ThreadingHTTPServer):
     daemon_threads = True
 
@@ -60,6 +162,11 @@ class ReyTVHandler(BaseHTTPRequestHandler):
         if path == "/api/status":
             self._send(200, {"ready": True, "token": self.server.csrf,
                              "revision": self._current_sha(), "version": self._version(), "full_update": True})
+        elif path == "/api/performance":
+            try:
+                self._send(200, performance_snapshot())
+            except (OSError, ValueError):
+                self._send(503, {"error": "Diagnóstico temporalmente no disponible"})
         elif path == "/api/native/status":
             try:
                 self._send(200, self._native().status())
@@ -280,7 +387,7 @@ def mouse_overlay():
     if font:x.XSetFont(d,kgc,font)
     key_open=False;key_mode='lower';key_pressed=None;key_rect=(0,0,820,260);field_y=None
     focus_events=queue.SimpleQueue();mouse_down=False;opened_at=0.0;field_bounds=None
-    mapped=False;pressed=None;last_window=0;last_size=None
+    mapped=False;pressed=None;last_window=0;last_size=None;last_raise=0.0
     parent=os.getppid()
 
     def prop(window,atom):
@@ -481,7 +588,7 @@ def mouse_overlay():
             if active:
                 if not mapped:
                     x.XMapRaised(d,win);mapped=True;paint()
-                else:x.XRaiseWindow(d,win)
+                elif time.monotonic()-last_raise>=.5:x.XRaiseWindow(d,win);last_raise=time.monotonic()
             elif mapped:
                 x.XUnmapWindow(d,win);mapped=False;pressed=None
             if active!=last_window:pressed=None;hide_keyboard();last_window=active;field_bounds=None;field_y=None

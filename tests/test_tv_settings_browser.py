@@ -4,7 +4,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "index.html").read_text()
-STATUS = {"ready": True, "token": "test", "version": "0.4.6", "full_update": True}
+STATUS = {"ready": True, "token": "test", "version": "0.5.0", "full_update": True}
 NATIVE = {
     "wifi": {"available": True, "enabled": True, "connected": "Red de prueba",
              "ipv4": "192.168.1.20", "interface": "wlan0",
@@ -21,7 +21,9 @@ def test(browser, width, height):
     page.on("pageerror", lambda error: errors.append(str(error)))
     def route(r):
         url = r.request.url
-        if "/api/native/status" in url:
+        if "/api/performance" in url:
+            r.fulfill(json={"cpu_percent":18,"memory":{"percent":45,"used_mib":900,"total_mib":2000},"disk":{"percent":56,"free_gib":5.6},"browser":"Google Chrome","video":{"driver":"i915","status":"VA-API disponible","h264":True,"va_drivers":["i965"]},"zram":False})
+        elif "/api/native/status" in url:
             r.fulfill(json=NATIVE)
         elif "/api/status" in url:
             r.fulfill(json=STATUS)
@@ -38,7 +40,7 @@ def test(browser, width, height):
     page.locator('[data-page="ajustes"]').click()
     page.locator("#native-wifi-toggle").wait_for()
     page.wait_for_function("!document.getElementById('native-wifi-toggle').disabled")
-    assert page.locator(".settings-category").count() == 5
+    assert page.locator(".settings-category").count() == 6
     assert page.locator(".native-panel:visible").count() == 1
     assert page.locator("#native-wifi-details").inner_text().find("192.168.1.20") >= 0
     page.keyboard.press("ArrowDown")
@@ -53,10 +55,18 @@ def test(browser, width, height):
     page.keyboard.press("Escape")
     page.keyboard.press("ArrowDown")
     page.keyboard.press("Enter")
-    assert page.locator("#settings-version").inner_text() == "0.4.6"
+    assert page.locator("#settings-version").inner_text() == "0.5.0"
     page.locator("#check-update").click()
     page.wait_for_function("!document.getElementById('apply-update').disabled")
     assert not page.locator("#native-settings").is_visible()
+    page.locator('[data-settings-category="performance"]').click()
+    page.wait_for_function("document.getElementById('perf-cpu').textContent === '18%'")
+    assert page.locator("#perf-browser").inner_text() == "Google Chrome"
+    assert page.locator("#perf-h264").inner_text() == "Compatible (VA-API)"
+    page.locator("#perf-effects").click()
+    assert not page.locator("body").evaluate("(el)=>el.classList.contains('light-effects')")
+    page.locator("#perf-effects").click()
+    assert page.locator("body").evaluate("(el)=>el.classList.contains('light-effects')")
     page.locator('[data-settings-category="wifi"]').click()
     page.get_by_role("button", name="Otra red", exact=False).click()
     assert page.locator("#native-pass").is_visible()
