@@ -124,3 +124,7 @@ El menú declara notranslate y la sesión inicia Chromium con Translate desactiv
 ### 0.3.2: salida a mantenimiento
 
 Ctrl+Alt+Esc cambia al escritorio LXQt dentro de la misma sesión X11, cerrando primero el navegador kiosco y Openbox. No solicita iniciar sesión de nuevo. Se desactiva el acceso automático a ReyTV dentro del escritorio (el archivo original se conserva en el directorio de estado del usuario). Un apagado completo permite regresar al modo TV al encender. Ctrl+Alt+M sigue disponible para mantenimiento rápido. Esta transición aún requiere la prueba física.
+
+### 0.3.3: elección de arranque sin llavero
+
+El aviso GNOME Keyring durante autologin se puede evitar de forma opcional: ejecutar el instalador con `--no-keyring` hace que solo la sesión TV use `--password-store=basic`. Chromium reduce la protección local de las credenciales y cookies/sesiones; no se recomienda guardar contraseñas sensibles en este perfil. Algunas sesiones existentes pueden requerir iniciar sesión de nuevo. No se elimina el llavero ni la contraseña del sistema. Para recuperar el modo protegido, ejecutar el instalador con `--keyring`. Sin argumentos se conserva la elección previa. El modo protegido sigue siendo el predeterminado de nuevas instalaciones. No se ha verificado todavía en el hardware.

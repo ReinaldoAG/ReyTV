@@ -1,14 +1,10 @@
-# REYTV 0.3.2 - ARRANQUE LIMPIO Y SALIDA A LXQT
-# En la pantalla de inicio de sesión selecciona LXQt antes de iniciar sesión.
-# Desde el escritorio, copia SOLO el comando siguiente en QTerminal:
-curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o /tmp/reytv-tv.sh && bash /tmp/reytv-tv.sh
+# REYTV 0.3.3 - ARRANQUE SIN AVISO DEL LLAVERO
+# Ctrl+Alt+Esc abre LXQt. Abre GitHub y QTerminal.
+# El modo sin llavero reduce la protección local de contraseñas y sesiones del navegador.
+# No se elimina la contraseña de Debian ni el llavero. No guardes contraseñas sensibles.
+# Copia SOLO este comando si quieres activar el arranque sin aviso:
+f=$(mktemp) && curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o "$f" && bash "$f" --no-keyring
 
-# Debe decir MODO TV INSTALADO Y VERIFICADO.
-# Apaga completamente y enciende de nuevo.
-# Ctrl+Alt+Esc: abre el escritorio LXQt directamente (en 0.3.2).
-# Ctrl+Alt+M: abre terminal sin salir del modo TV.
-# F8: inicio.
-# Si pide contraseña al arrancar, fotografía el cuadro antes de introducirla.
-# Rescate desde Ctrl+Alt+F3 (solo en caso de fallo):
-# sudo reytv-tv-disable
-# sudo systemctl restart sddm
+# Cuando diga MODO TV INSTALADO Y VERIFICADO, apaga completamente y vuelve a encender.
+# Para recuperar la protección del llavero (opcional; no ejecutar ahora):
+# f=$(mktemp) && curl -fsSL https://raw.githubusercontent.com/ReinaldoAG/ReyTV/main/linux/reytv-install-tv.sh -o "$f" && bash "$f" --keyring

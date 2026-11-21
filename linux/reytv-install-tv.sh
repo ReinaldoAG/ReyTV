@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 # Transición desde ReyTV 0.2.2; no formatea, no borra LXQt, ni cambia firmware.
 set -euo pipefail
+keyring_mode=keep
+case "${1:-}" in
+  --no-keyring) keyring_mode=basic ;;
+  --keyring) keyring_mode=protected ;;
+  "") ;;
+  *) echo "Uso: reytv-install-tv.sh [--no-keyring|--keyring]" >&2; exit 2 ;;
+esac
+[ "$#" -le 1 ] || exit 2
+if [ "$keyring_mode" = basic ]; then
+  echo "Modo TV sin llavero: las credenciales y sesiones del navegador tendrán menos protección local. No se cambia la contraseña de Debian ni se borra el llavero."
+fi
 [ "$(id -u)" != 0 ] || { echo 'Ejecuta como usuario normal, no con sudo.'; exit 1; }
 user=$(id -un)
 [[ "$user" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
@@ -103,6 +114,15 @@ sudo test -x /usr/local/bin/reytv-tv-session
 cmp -s "$temp/new.conf" /etc/sddm.conf
 sed -n '/^\[Autologin\]/,/^\[/p' /etc/sddm.conf
 grep -F -- '--disable-features=Translate' /usr/local/bin/reytv-tv-session >/dev/null
+# Guardar la elección solo para el perfil dedicado de ReyTV.
+keyring_conf="${XDG_CONFIG_HOME:-$HOME/.config}/reytv"
+if [ "$keyring_mode" = basic ]; then
+  install -d -m 0700 "$keyring_conf"
+  (umask 077; touch "$keyring_conf/tv-password-store-basic")
+  chmod 600 "$keyring_conf/tv-password-store-basic"
+elif [ "$keyring_mode" = protected ]; then
+  rm -f "$keyring_conf/tv-password-store-basic"
+fi
 sync
 echo
 echo 'MODO TV INSTALADO Y VERIFICADO. Apaga completamente el Chromebox y vuelve a encenderlo.'
