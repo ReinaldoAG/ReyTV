@@ -4,7 +4,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "index.html").read_text()
-STATUS = {"ready": True, "token": "test", "version": "0.4.4", "full_update": True}
+STATUS = {"ready": True, "token": "test", "version": "0.4.5", "full_update": True}
 NATIVE = {
     "wifi": {"available": True, "enabled": True, "connected": "Red de prueba",
              "ipv4": "192.168.1.20", "interface": "wlan0",
@@ -53,7 +53,7 @@ def test(browser, width, height):
     page.keyboard.press("Escape")
     page.keyboard.press("ArrowDown")
     page.keyboard.press("Enter")
-    assert page.locator("#settings-version").inner_text() == "0.4.4"
+    assert page.locator("#settings-version").inner_text() == "0.4.5"
     page.locator("#check-update").click()
     page.wait_for_function("!document.getElementById('apply-update').disabled")
     assert not page.locator("#native-settings").is_visible()
@@ -66,7 +66,7 @@ def test(browser, width, height):
     page.locator("#keyboard-done").click()
     assert not page.locator("#screen-keyboard").is_visible()
     assert len(page.locator("#native-pass").input_value()) == 1
-    page.keyboard.press("Escape")
+    page.locator("#back-button").click()
     assert not page.locator("#modal").is_visible()
 
     # El documento no se desplaza; solo el panel desbordado.
@@ -120,6 +120,15 @@ def test(browser, width, height):
     assert page.locator("#apps .app-card").count() == 1
     assert page.locator("#apps .app-card").inner_text().find("Netflix") >= 0
     assert page.evaluate("document.documentElement.scrollHeight <= innerHeight + 1")
+    page.locator("#back-button").click()
+    assert page.locator("#search").input_value() == ""
+    page.locator("#search").click()
+    assert page.locator("#screen-keyboard").is_visible()
+    page.locator("#back-button").click()
+    assert not page.locator("#screen-keyboard").is_visible()
+    page.locator('[data-page="favoritos"]').click()
+    page.locator("#back-button").click()
+    assert page.locator('[data-page="aplicaciones"]').get_attribute("aria-current") == "page"
     assert not errors, errors
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     page.close()
