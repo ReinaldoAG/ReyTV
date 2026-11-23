@@ -16,7 +16,7 @@ class FullUpdateTest(unittest.TestCase):
         self.assertIn("Terminal=true", desktop)
         self.assertIn("reytv-gui-setup.sh", desktop)
         self.assertIn('linux/reytv-update', launcher)
-        self.assertNotIn("sudo ", launcher)
+        self.assertIn("sudo -v", launcher)  # Solo para el lanzador del sistema, con contraseña.
         self.assertNotIn("sudo ", (ROOT / "linux/reytv-update").read_text())
 
     def test_install_rollback_user_space_only(self):
