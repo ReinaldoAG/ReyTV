@@ -1,4 +1,5 @@
 import importlib.util
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -21,6 +22,18 @@ class PerformanceTests(unittest.TestCase):
             self.assertEqual(result["percent"],50)
             self.assertEqual(result["total_mib"],2000)
             self.assertEqual(result["swap_used_mib"],50)
+    def test_profile_health_without_reading_cookies(self):
+        with tempfile.TemporaryDirectory() as d, patch.dict(os.environ, {"XDG_CONFIG_HOME":d}):
+            config=Path(d)/"reytv"
+            profile=config/"chrome-profile"/"Default"/"Network"
+            profile.mkdir(parents=True)
+            (profile/"Cookies").write_bytes(b"fake-no-real-secrets")
+            (config/"tv-password-store-basic").touch()
+            status=mod.browser_profile_health()
+            self.assertTrue(status["profile_writable"])
+            self.assertTrue(status["cookies_database_present"])
+            self.assertIn("Básico",status["password_storage"])
+            self.assertNotIn("fake",repr(status))
     def test_snapshot(self):
         with patch.object(mod,"vaapi_snapshot",return_value={"h264":None}),patch.object(mod,"tv_browser",return_value="No verificado"):
             result=mod.performance_snapshot()

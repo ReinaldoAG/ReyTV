@@ -28,6 +28,15 @@ def wait_until(page, condition, seconds=10):
         page.wait_for_timeout(100)
     raise AssertionError("No se cumplió condición X11")
 
+def show_toolbar(page):
+    cmd("xdotool","mousemove","1252","30")
+    win=wait_until(page,overlay_id)
+    info=cmd("xdotool","getwindowgeometry","--shell",win)
+    geo=dict(line.split("=",1) for line in info.splitlines() if "=" in line)
+    assert int(geo["X"])>1100 and 0<=int(geo["Y"])<50, geo
+    assert int(geo["WIDTH"])==132, geo
+    return win
+
 def main():
     fixture = tempfile.TemporaryDirectory()
     marker = Path(fixture.name) / "home-called"
@@ -51,18 +60,25 @@ def main():
             wait_until(page, lambda: "ReyTV" in cmd("xdotool","getactivewindow","getwindowname"))
             overlay = subprocess.Popen([sys.executable, str(ROOT/"linux/reytv-server.py"), "--mouse-overlay"])
             page.wait_for_timeout(500)
+            cmd("xdotool","mousemove","1252","30")
+            page.wait_for_timeout(400)
             assert not overlay_id(), "No debe duplicar el botón en ReyTV"
             page.goto("https://example.test/first")
             page.goto("https://example.test/second")
-            window = wait_until(page, overlay_id)
+            cmd("xdotool","mousemove","610","350")
+            page.wait_for_timeout(350)
+            assert not overlay_id(), "No mostrar controles fuera de la esquina superior derecha"
+            window = show_toolbar(page)
             active_before = cmd("xdotool","getactivewindow")
-            cmd("xdotool","mousemove","--window",window,"30","20","click","1")
+            cmd("xdotool","mousemove","--window",window,"22","20","click","1")
             page.wait_for_url("**/first")
+            cmd("xdotool","mousemove","630","365")
+            wait_until(page,lambda:not overlay_id())
             assert cmd("xdotool","getactivewindow")==active_before, "No tomar foco"
             # Teclado externo sin alterar el foco, con escritura real en un formulario.
             page.locator("#entry").click()
-            window=wait_until(page,overlay_id)
-            cmd("xdotool","mousemove","--window",window,"190","20","click","1")
+            window=show_toolbar(page)
+            cmd("xdotool","mousemove","--window",window,"110","20","click","1")
             keyboard=wait_until(page,lambda:overlay_id("ReyTV external keyboard"))
             def key(row,col,count):
                 info=cmd("xdotool","getwindowgeometry","--shell",keyboard)
@@ -83,15 +99,15 @@ def main():
             assert cmd("xdotool","getactivewindow")==active_before
             key(3,5,6)
             wait_until(page,lambda:not overlay_id("ReyTV external keyboard"))
-            cmd("xdotool","mousemove","--window",window,"190","20","click","1")
+            cmd("xdotool","mousemove","--window",window,"110","20","click","1")
             keyboard=wait_until(page,lambda:overlay_id("ReyTV external keyboard"))
             key(3,4,6)
             wait_until(page,lambda:not overlay_id("ReyTV external keyboard"))
-            window=wait_until(page,overlay_id)
-            cmd("xdotool","mousemove","--window",window,"110","20","click","1")
+            window=show_toolbar(page)
+            cmd("xdotool","mousemove","--window",window,"66","20","click","1")
             wait_until(page, marker.exists)
-            window=wait_until(page,overlay_id)
-            cmd("xdotool","mousemove","--window",window,"30","20","click","1")
+            window=show_toolbar(page)
+            cmd("xdotool","mousemove","--window",window,"22","20","click","1")
             page.wait_for_url("**/index.html")
             wait_until(page,lambda:not overlay_id())
             browser.close()

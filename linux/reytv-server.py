@@ -109,6 +109,17 @@ def vaapi_snapshot():
     return result
 
 
+def browser_profile_health():
+    """Indicadores del perfil, sin leer ni devolver cookies o contraseñas."""
+    config = Path(os.environ.get("XDG_CONFIG_HOME") or (Path.home()/".config"))
+    profile = config/"reytv/chrome-profile"
+    basic = (config/"reytv/tv-password-store-basic").is_file()
+    cookie_files = (profile/"Default/Network/Cookies", profile/"Default/Cookies")
+    return {"profile_writable": profile.is_dir() and os.access(profile, os.W_OK),
+            "cookies_database_present": any(p.is_file() for p in cookie_files),
+            "password_storage": "Básico (sin llavero)" if basic else "Llavero del sistema"}
+
+
 def performance_snapshot():
     import shutil
     import time
@@ -123,7 +134,8 @@ def performance_snapshot():
         zram = None
     return {"cpu_percent":cpu,"memory":memory,
             "disk":{"percent":round(100*disk.used/disk.total),"free_gib":round(disk.free/1024**3,1)},
-            "browser":tv_browser(),"video":vaapi_snapshot(),"zram":zram}
+            "browser":tv_browser(),"video":vaapi_snapshot(),"zram":zram,
+            "session":browser_profile_health()}
 
 
 class ReyTVServer(ThreadingHTTPServer):
@@ -369,7 +381,8 @@ def mouse_overlay():
     active_atom=x.XInternAtom(d,b"_NET_ACTIVE_WINDOW",False)
     title_atom=x.XInternAtom(d,b"_NET_WM_NAME",False)
     legacy_atom=x.XInternAtom(d,b"WM_NAME",False)
-    width,height=234,44
+    # Tres iconos compactos, ocultos hasta acercar el mouse a la esquina superior derecha.
+    width,height=132,44
     win=x.XCreateSimpleWindow(d,root,0,0,width,height,1,0x839DD0,0x162745)
     attrs=Attributes();attrs.override_redirect=1
     x.XChangeWindowAttributes(d,win,1<<9,C.byref(attrs))
@@ -387,7 +400,7 @@ def mouse_overlay():
     if font:x.XSetFont(d,kgc,font)
     key_open=False;key_mode='lower';key_pressed=None;key_rect=(0,0,820,260);field_y=None
     focus_events=queue.SimpleQueue();mouse_down=False;opened_at=0.0;field_bounds=None
-    mapped=False;pressed=None;last_window=0;last_size=None;last_raise=0.0
+    mapped=False;pressed=None;last_window=0;last_size=None;last_raise=0.0;hover_since=None
     parent=os.getppid()
 
     def prop(window,atom):
@@ -418,22 +431,28 @@ def mouse_overlay():
         return active
 
     def paint():
-        x.XSetForeground(d,gc,0x162745);x.XFillRectangle(d,win,gc,0,0,width,height)
-        x.XSetForeground(d,gc,0x324D80);x.XDrawLine(d,win,gc,75,6,75,37);x.XDrawLine(d,win,gc,148,6,148,37)
-        x.XSetForeground(d,gc,0xE9F1FF)
+        # Iconos sin texto: Atrás, Inicio y Teclado. Contraste alto en 44 px.
+        x.XSetForeground(d,gc,0x162745)
+        x.XFillRectangle(d,win,gc,0,0,width,height)
+        x.XSetForeground(d,gc,0x39547B)
+        for xpos in (44,88):x.XDrawLine(d,win,gc,xpos,5,xpos,38)
+        x.XSetForeground(d,gc,0xEDF5FF)
         for dy in (0,1):
-            x.XDrawLine(d,win,gc,12,22+dy,26,22+dy)
-            x.XDrawLine(d,win,gc,12,22+dy,18,16+dy)
-            x.XDrawLine(d,win,gc,12,22+dy,18,28+dy)
-            x.XDrawLine(d,win,gc,85,21+dy,92,14+dy)
-            x.XDrawLine(d,win,gc,92,14+dy,99,21+dy)
-        x.XDrawLine(d,win,gc,87,21,87,30);x.XDrawLine(d,win,gc,97,21,97,30)
-        x.XDrawLine(d,win,gc,87,30,97,30)
-        for text,xx in [(b"Atras",31),(b"Inicio",105),(b"Teclado",180)]:
-            if xx==180:
-                x.XDrawLine(d,win,gc,158,15,174,15);x.XDrawLine(d,win,gc,158,29,174,29);x.XDrawLine(d,win,gc,158,15,158,29);x.XDrawLine(d,win,gc,174,15,174,29)
-                for xx2 in (162,166,170):x.XDrawLine(d,win,gc,xx2,19,xx2,22)
-            x.XDrawString(d,win,gc,xx,26,text,len(text))
+            x.XDrawLine(d,win,gc,14,21+dy,33,21+dy)
+            x.XDrawLine(d,win,gc,14,21+dy,21,14+dy)
+            x.XDrawLine(d,win,gc,14,21+dy,21,28+dy)
+            x.XDrawLine(d,win,gc,56,21+dy,66,13+dy)
+            x.XDrawLine(d,win,gc,66,13+dy,76,21+dy)
+        x.XDrawLine(d,win,gc,59,21,59,31)
+        x.XDrawLine(d,win,gc,73,21,73,31)
+        x.XDrawLine(d,win,gc,59,31,73,31)
+        x.XDrawLine(d,win,gc,101,15,121,15)
+        x.XDrawLine(d,win,gc,101,15,101,30)
+        x.XDrawLine(d,win,gc,121,15,121,30)
+        x.XDrawLine(d,win,gc,101,30,121,30)
+        for xx in (106,111,116):
+            x.XDrawLine(d,win,gc,xx,20,xx,22)
+            x.XDrawLine(d,win,gc,xx,25,xx,27)
         x.XFlush(d)
 
     def send_keys(home):
@@ -582,15 +601,25 @@ def mouse_overlay():
             active=browser_window()
             size=(x.XDisplayWidth(d,screen),x.XDisplayHeight(d,screen))
             if size!=last_size:
-                x.XMoveWindow(d,win,max(0,size[0]-width-18),max(0,size[1]-height-18))
+                x.XMoveWindow(d,win,max(0,size[0]-width-14),14)
                 last_size=size
                 if key_open:show_keyboard()
-            if active:
-                if not mapped:
-                    x.XMapRaised(d,win);mapped=True;paint()
-                elif time.monotonic()-last_raise>=.5:x.XRaiseWindow(d,win);last_raise=time.monotonic()
-            elif mapped:
-                x.XUnmapWindow(d,win);mapped=False;pressed=None
+            # La esquina funciona como zona de activación; no hay ventana
+            # invisible que intercepte clics sobre las aplicaciones.
+            rr=U();ch=U();rx=I();ry=I();wx=I();wy=I();mask=C.c_uint()
+            pointer_ok=bool(x.XQueryPointer(d,root,C.byref(rr),C.byref(ch),C.byref(rx),C.byref(ry),C.byref(wx),C.byref(wy),C.byref(mask)))
+            near=pointer_ok and rx.value>=size[0]-175 and ry.value<=75 and rx.value<size[0] and ry.value>=0
+            if active and near:
+                if hover_since is None:hover_since=time.monotonic()
+                if time.monotonic()-hover_since>=.17:
+                    if not mapped:
+                        x.XMapRaised(d,win);mapped=True;paint();last_raise=time.monotonic()
+                    elif time.monotonic()-last_raise>=.5:
+                        x.XRaiseWindow(d,win);last_raise=time.monotonic()
+            else:
+                hover_since=None
+                if mapped:
+                    x.XUnmapWindow(d,win);mapped=False;pressed=None
             if active!=last_window:pressed=None;hide_keyboard();last_window=active;field_bounds=None;field_y=None
             latest=None
             while not focus_events.empty():latest=focus_events.get_nowait()
@@ -606,7 +635,7 @@ def mouse_overlay():
                 if x.XQueryPointer(d,root,C.byref(rr),C.byref(ch),C.byref(rx),C.byref(ry),C.byref(wx),C.byref(wy),C.byref(mask)):
                     down=bool(mask.value&(1<<8));kx,ky,ww,hh=key_rect
                     over_key=key_open and kx<=rx.value<kx+ww+2 and ky<=ry.value<ky+hh+2
-                    over_bar=size[0]-width-18<=rx.value<=size[0]-16 and size[1]-height-18<=ry.value<=size[1]-16
+                    over_bar=mapped and size[0]-width-14<=rx.value<size[0]-14 and 14<=ry.value<14+height
                     on_field=False
                     if field_bounds:
                         fx,fy,fw,fh=field_bounds;on_field=fx<=rx.value<fx+fw and fy<=ry.value<fy+fh
@@ -625,7 +654,7 @@ def mouse_overlay():
                 elif event.type==4 and event.button.button==1:
                     if event.button.window==kw and key_open:
                         key_pressed=key_at(event.button.x,event.button.y);paint_keyboard()
-                    else:pressed=min(2,event.button.x//75) if mapped and active else None
+                    else:pressed=min(2,event.button.x//44) if mapped and active and event.button.window==win else None
                 elif event.type==5 and event.button.button==1:
                     b=event.button
                     if b.window==kw and key_open:
@@ -633,7 +662,7 @@ def mouse_overlay():
                         if key and key==key_pressed and browser_window()==active:key_event(key)
                         key_pressed=None
                         if key_open:paint_keyboard()
-                    elif pressed is not None and mapped and 0<=b.x<width and 0<=b.y<height and pressed==min(2,b.x//75) and browser_window()==active:
+                    elif pressed is not None and mapped and 0<=b.x<width and 0<=b.y<height and pressed==min(2,b.x//44) and browser_window()==active:
                         if pressed==2:
                             if key_open:hide_keyboard()
                             else:show_keyboard()
