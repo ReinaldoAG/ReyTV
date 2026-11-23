@@ -99,6 +99,7 @@ def main():
             assert cmd("xdotool","getactivewindow")==active_before
             key(3,5,6)
             wait_until(page,lambda:not overlay_id("ReyTV external keyboard"))
+            window=show_toolbar(page)
             cmd("xdotool","mousemove","--window",window,"110","20","click","1")
             keyboard=wait_until(page,lambda:overlay_id("ReyTV external keyboard"))
             key(3,4,6)
